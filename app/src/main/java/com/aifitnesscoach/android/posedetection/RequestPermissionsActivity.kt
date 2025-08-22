@@ -89,7 +89,12 @@ class RequestPermissionsActivity : AppCompatActivity(),
 
         private val REQUIRED_RUNTIME_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
+<<<<<<< HEAD
 
+=======
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+>>>>>>> e85544107248d4b6bc91b451d74e64c78e6d09af
         )
     }
 }

@@ -8,19 +8,32 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+<<<<<<< HEAD
+=======
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+>>>>>>> e85544107248d4b6bc91b451d74e64c78e6d09af
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
+<<<<<<< HEAD
         android:label="AI IntegratedFitnessCoach"
+=======
+        android:label="@string/app_name"
+>>>>>>> e85544107248d4b6bc91b451d74e64c78e6d09af
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Modarb"
         android:usesCleartextTraffic="true"
         tools:ignore="DiscouragedApi"
+<<<<<<< HEAD
         tools:targetApi="36">
+=======
+        tools:targetApi="31">
+>>>>>>> e85544107248d4b6bc91b451d74e64c78e6d09af
         <activity android:name=".posedetection.RequestPermissionsActivity" />
         <activity
             android:name=".ui.workout.activities.WorkoutActivity"
