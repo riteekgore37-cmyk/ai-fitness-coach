@@ -20,6 +20,7 @@ import com.aifitnesscoach.android.databinding.FragmentHomeBinding
 import com.aifitnesscoach.android.network.ApiResult
 import com.aifitnesscoach.android.network.NetworkHelper
 import com.aifitnesscoach.android.posedetection.RequestPermissionsActivity
+import com.aifitnesscoach.android.ui.home.ui.more.activities.ProfileActivity
 import com.aifitnesscoach.android.ui.ChatBotWebView
 import com.aifitnesscoach.android.ui.helpers.WorkoutData
 import com.aifitnesscoach.android.ui.home.HomeActivity
@@ -49,9 +50,13 @@ class HomeFragment : Fragment() {
         val root: View = binding.root
         getHomeData()
         getTodayInTake()
-        initLogout()
         initActions()
         handleClick()
+
+        // ✅ Navigate to ProfileActivity
+        binding.profileBtn.setOnClickListener {
+            startActivity(Intent(requireContext(), ProfileActivity::class.java))
+        }
 
         Log.d("User ID", UserPrefUtil.getUserData(requireContext())!!.user.id)
         return root
@@ -145,20 +150,6 @@ class HomeFragment : Fragment() {
         progressBar.max = goal
         progressBar.progress = consumed
     }
-
-    private fun initLogout() {
-        binding.profileBtn.setOnClickListener {
-            UserPrefUtil.saveUserData(requireContext(), null)
-            UserPrefUtil.setUserLoggedIn(requireContext(), false)
-            startActivity(Intent(requireContext(), SplashActivity::class.java))
-            requireActivity().finish()
-        }
-
-        binding.viewMealBtn.setOnClickListener {
-            (activity as? HomeActivity)?.navigateToFragment(R.id.navigation_nutrition)
-        }
-    }
-
 
     private fun getHomeData() {
         binding.progressView.progressOverlay.visibility = View.VISIBLE
