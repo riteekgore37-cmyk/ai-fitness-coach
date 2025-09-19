@@ -5,7 +5,7 @@
     android:viewportHeight="60">
     <!-- Outer Circle -->
     <path
-        android:fillColor="#997AFF"
+        android:fillColor="#FF7A7A"
         android:pathData="M30,30m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
     <!-- Play Button Path -->
     <path

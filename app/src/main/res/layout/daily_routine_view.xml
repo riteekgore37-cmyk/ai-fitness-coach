@@ -56,7 +56,7 @@
                     app:cpb_background_progressbar_color="#b6bbd8"
                     app:cpb_background_progressbar_width="5dp"
                     app:cpb_progress_direction="to_right"
-                    app:cpb_progressbar_color="@color/primary_400"
+                    app:cpb_progressbar_color="#FF6161"
                     app:cpb_progressbar_width="4dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -441,7 +441,7 @@
                             app:layout_constraintEnd_toEndOf="@+id/breakfast_text"
                             app:layout_constraintStart_toStartOf="@+id/breakfast_text"
                             app:layout_constraintTop_toBottomOf="@+id/breakfast_text"
-                            app:tint="@color/primary_200" />
+                            app:tint="#FFA4A4" />
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

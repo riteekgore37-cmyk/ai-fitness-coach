@@ -17,10 +17,10 @@
                         android:startY="0"
                         android:type="linear">
                         <item
-                            android:color="#FF003AFF"
+                            android:color="#FF0000"
                             android:offset="0" />
                         <item
-                            android:color="#FF90A8F9"
+                            android:color="#F99090"
                             android:offset="1" />
                     </gradient>
                 </aapt:attr>
@@ -34,10 +34,10 @@
                         android:startY="0.001"
                         android:type="linear">
                         <item
-                            android:color="#FF003AFF"
+                            android:color="#FF0000"
                             android:offset="0" />
                         <item
-                            android:color="#FF90A8F9"
+                            android:color="#F99090"
                             android:offset="1" />
                     </gradient>
                 </aapt:attr>
@@ -51,10 +51,10 @@
                         android:startY="-0"
                         android:type="linear">
                         <item
-                            android:color="#FF003AFF"
+                            android:color="#FF0000"
                             android:offset="0" />
                         <item
-                            android:color="#FF90A8F9"
+                            android:color="#F99090"
                             android:offset="1" />
                     </gradient>
                 </aapt:attr>
@@ -68,13 +68,13 @@
                         android:startY="0"
                         android:type="linear">
                         <item
-                            android:color="#FF6739FF"
+                            android:color="#FF3939"
                             android:offset="0" />
                         <item
-                            android:color="#FF90A8F9"
+                            android:color="#F99090"
                             android:offset="1" />
                         <item
-                            android:color="#FFB9A4FF"
+                            android:color="#FFA4A4"
                             android:offset="1" />
                     </gradient>
                 </aapt:attr>

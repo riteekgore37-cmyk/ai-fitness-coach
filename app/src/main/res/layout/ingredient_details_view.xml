@@ -156,7 +156,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
-        android:backgroundTint="@color/primary_500"
+        android:backgroundTint="#FF3939"
         android:text="@string/add_to_breakfast"
         android:textColor="@android:color/white"
         android:textSize="18sp"
