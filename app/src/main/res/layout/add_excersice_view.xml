@@ -5,17 +5,16 @@
     android:layout_height="match_parent"
     android:background="@color/grey_800">
 
+
     <ImageButton
         android:id="@+id/closeBtn"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:background="@null"
         android:src="@drawable/ic_close_white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/addExerciseView"
