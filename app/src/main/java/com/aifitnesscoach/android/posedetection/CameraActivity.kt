@@ -14,6 +14,7 @@ import com.aifitnesscoach.android.posedetection.Utils.CameraSource
 import com.aifitnesscoach.android.posedetection.Utils.CameraSourcePreview
 import com.aifitnesscoach.android.posedetection.Utils.PreferenceUtils
 import com.aifitnesscoach.android.posedetection.posedetector.PoseDetectorProcessor
+import com.aifitnesscoach.android.posedetection.VoiceCoach
 import java.io.IOException
 
 @KeepName
@@ -29,6 +30,9 @@ class CameraActivity : AppCompatActivity(),
         Log.d(TAG, "onCreate")
         setContentView(R.layout.activity_camera_view)
 
+        // ✅ Initialize Text-to-Speech once
+        VoiceCoach.init(this)
+
         preview = findViewById(R.id.preview_view)
         if (preview == null) {
             Log.d(TAG, "Preview is null")
@@ -38,6 +42,7 @@ class CameraActivity : AppCompatActivity(),
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null")
         }
+
         initSetting()
         createCameraSource(POSE_DETECTION)
         handleCameraSwitch()
@@ -60,16 +65,14 @@ class CameraActivity : AppCompatActivity(),
         facingSwitch.setOnCheckedChangeListener(this)
     }
 
-
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         Log.d(TAG, "Set facing")
-        if (cameraSource != null) {
-            if (isChecked) {
-                cameraSource?.setFacing(CameraSource.CAMERA_FACING_FRONT)
-            } else {
-                cameraSource?.setFacing(CameraSource.CAMERA_FACING_BACK)
-            }
-        }
+        cameraSource?.setFacing(
+            if (isChecked)
+                CameraSource.CAMERA_FACING_FRONT
+            else
+                CameraSource.CAMERA_FACING_BACK
+        )
         preview?.stop()
         startCameraSource()
     }
@@ -78,6 +81,7 @@ class CameraActivity : AppCompatActivity(),
         if (cameraSource == null) {
             cameraSource = CameraSource(this, graphicOverlay)
         }
+
         try {
             when (model) {
 
@@ -85,12 +89,16 @@ class CameraActivity : AppCompatActivity(),
                     val poseDetectorOptions =
                         PreferenceUtils.getPoseDetectorOptionsForLivePreview(this)
                     Log.i(TAG, "Using Pose Detector with options $poseDetectorOptions")
+
                     val shouldShowInFrameLikelihood =
                         PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this)
-                    val visualizeZ = PreferenceUtils.shouldPoseDetectionVisualizeZ(this)
-                    val rescaleZ = PreferenceUtils.shouldPoseDetectionRescaleZForVisualization(this)
-                    val runClassification =
-                        true  /*PreferenceUtils.shouldPoseDetectionRunClassification(this)*/
+                    val visualizeZ =
+                        PreferenceUtils.shouldPoseDetectionVisualizeZ(this)
+                    val rescaleZ =
+                        PreferenceUtils.shouldPoseDetectionRescaleZForVisualization(this)
+
+                    val runClassification = true
+
                     cameraSource!!.setMachineLearningFrameProcessor(
                         PoseDetectorProcessor(
                             this,
@@ -110,7 +118,7 @@ class CameraActivity : AppCompatActivity(),
             Log.e(TAG, "Can not create image processor: $model", e)
             Toast.makeText(
                 applicationContext,
-                "Can not create image processor: " + e.message,
+                "Can not create image processor: ${e.message}",
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -119,22 +127,16 @@ class CameraActivity : AppCompatActivity(),
     private fun startCameraSource() {
         if (cameraSource != null) {
             try {
-                if (preview == null) {
-                    Log.d(TAG, "resume: Preview is null")
-                }
-                if (graphicOverlay == null) {
-                    Log.d(TAG, "resume: graphOverlay is null")
-                }
-                preview!!.start(cameraSource, graphicOverlay)
+                preview?.start(cameraSource, graphicOverlay)
             } catch (e: IOException) {
                 Log.e(TAG, "Unable to start camera source.", e)
-                cameraSource!!.release()
+                cameraSource?.release()
                 cameraSource = null
             }
         }
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume")
         createCameraSource(POSE_DETECTION)
@@ -144,7 +146,6 @@ class CameraActivity : AppCompatActivity(),
     override fun onPause() {
         super.onPause()
         preview?.stop()
-        // TODO check that
         cameraSource?.release()
     }
 
@@ -152,16 +153,15 @@ class CameraActivity : AppCompatActivity(),
         super.onStop()
         cameraSource?.release()
         preview?.stop()
-
     }
 
-    public override fun onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
-        if (cameraSource != null) {
-            cameraSource?.release()
-        }
-    }
+        cameraSource?.release()
 
+        // ✅ Release Text-to-Speech properly
+        VoiceCoach.release()
+    }
 
     companion object {
         private const val POSE_DETECTION = "Pose Detection"
