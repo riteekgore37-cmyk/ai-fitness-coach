@@ -297,7 +297,6 @@
     <string name="pref_key_pose_detector_visualize_z" translatable="false">pdvz</string>
     <string name="pref_title_pose_detector_rescale_z" translatable="false">Rescale z value for visualization</string>
     <string name="pref_key_pose_detector_rescale_z" translatable="false">pdrz</string>
-    <string name="back" />
 
 
 </resources>

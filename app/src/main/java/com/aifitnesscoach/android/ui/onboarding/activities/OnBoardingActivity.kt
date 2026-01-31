@@ -3,6 +3,7 @@ package com.aifitnesscoach.android.ui.onboarding.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -12,111 +13,105 @@ import com.aifitnesscoach.android.ui.onboarding.adapters.OnBoardingAdapter
 import com.aifitnesscoach.android.ui.onboarding.models.UserRegisterData
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
 
-class OnBoardingActivity : AppCompatActivity() {
 
+class OnBoardingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOnBoardingBinding
+    private var currPos: Int = 0
+    private var curPage: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityOnBoardingBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        binding.backButton.apply {
-            bringToFront()
-            elevation = 100f
-            isClickable = true
-            isFocusable = true
-        }
-
+        val view = binding.root
+        setContentView(view)
         initViewPager()
         handleButtons()
-        handleSystemBack()
+        handleOnBack()
+
     }
 
     @SuppressLint("InflateParams")
     private fun initViewPager() {
+        val view1 = layoutInflater.inflate(R.layout.single_selection_view, null)
+        val view2 = layoutInflater.inflate(R.layout.gender_selection_view, null)
+        val view3 = layoutInflater.inflate(R.layout.target_weight_selection_view, null)
+        val view4 = layoutInflater.inflate(R.layout.message_view, null)
+        val view5 = layoutInflater.inflate(R.layout.single_selection_view, null)
+        val view6 = layoutInflater.inflate(R.layout.single_selection_view, null)
+        val view7 = layoutInflater.inflate(R.layout.multiple_selection_view, null)
+        val view8 = layoutInflater.inflate(R.layout.multiple_selection_view, null)
+        val view9 = layoutInflater.inflate(R.layout.message_view, null)
+
+
         val adapter = OnBoardingAdapter(
             listOf(
-                layoutInflater.inflate(R.layout.single_selection_view, null),
-                layoutInflater.inflate(R.layout.gender_selection_view, null),
-                layoutInflater.inflate(R.layout.target_weight_selection_view, null),
-                layoutInflater.inflate(R.layout.message_view, null),
-                layoutInflater.inflate(R.layout.single_selection_view, null),
-                layoutInflater.inflate(R.layout.single_selection_view, null),
-                layoutInflater.inflate(R.layout.multiple_selection_view, null),
-                layoutInflater.inflate(R.layout.multiple_selection_view, null),
-                layoutInflater.inflate(R.layout.message_view, null)
-            ),
-            this
+                view1, view2, view3, view4, view5, view6, view7, view8, view9
+            ), this
         )
+        binding.viewPager.isUserInputEnabled = false
+        binding.viewPager.adapter = adapter
 
-        binding.viewPager.apply {
-            isUserInputEnabled = false
-            this.adapter = adapter
-        }
 
-        // 🔥 Prevent onboarding pages from blocking back button
-        binding.viewPager.getChildAt(0)?.isClickable = false
-        binding.viewPager.getChildAt(0)?.isFocusable = false
     }
 
     private fun handleButtons() {
-
         binding.nextButton.setOnClickListener {
-
-            val current = binding.viewPager.currentItem
-            val last = (binding.viewPager.adapter?.itemCount ?: 0) - 1
-
-            if (current == last) {
-                // Final page → continue
+            if (binding.nextButton.text == getString(R.string.continue_)) {
+                UserRegisterData.printData()
                 if (ValidationUtil.validateRegistrationData(UserRegisterData.registerRequest)) {
-                    startActivity(Intent(this, RegisterScreenActivity::class.java))
+                    val i = Intent(this@OnBoardingActivity, RegisterScreenActivity::class.java)
+                    startActivity(i)
+                    return@setOnClickListener
                 } else {
                     Toast.makeText(
-                        this,
-                        getString(R.string.please_fill_all_the_data),
-                        Toast.LENGTH_SHORT
+                        this, getString(R.string.please_fill_all_the_data), Toast.LENGTH_SHORT
                     ).show()
                 }
-            } else {
-                binding.viewPager.currentItem = current + 1
-            }
 
-            updateButtonText()
+            }
+            goNext()
         }
 
         binding.backButton.setOnClickListener {
             goBack()
         }
+
     }
 
-    private fun goBack() {
-        val current = binding.viewPager.currentItem
-
-        if (current == 0) {
-            finish()
-        } else {
-            binding.viewPager.currentItem = current - 1
-        }
-
-        updateButtonText()
-    }
-
-    private fun updateButtonText() {
-        val current = binding.viewPager.currentItem
-        val last = (binding.viewPager.adapter?.itemCount ?: 0) - 1
-
-        binding.nextButton.text =
-            if (current == last) getString(R.string.continue_)
-            else getString(R.string.next)
-    }
-
-    private fun handleSystemBack() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+    private fun handleOnBack() {
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 goBack()
             }
         })
     }
+
+    private fun goNext() {
+        currPos = binding.viewPager.currentItem
+        if (curPage + 2 == binding.viewPager.adapter?.itemCount) {
+            binding.nextButton.text = getString(R.string.continue_)
+        }
+        if ((currPos + 1) != binding.viewPager.adapter?.itemCount) {
+            binding.viewPager.currentItem = currPos + 1
+            curPage++
+        }
+    }
+
+    private fun goBack() {
+        binding.nextButton.text = getString(R.string.next)
+        currPos = binding.viewPager.currentItem
+        if (curPage == 0) finish()
+        if ((currPos - 1) != binding.viewPager.adapter?.itemCount) {
+            binding.viewPager.currentItem = currPos - 1
+            curPage--
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && curPage == 0) {
+            finish()
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
 }
