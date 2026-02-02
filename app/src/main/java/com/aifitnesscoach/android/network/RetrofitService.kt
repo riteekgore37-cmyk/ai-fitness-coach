@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitService {
 
-    var BASE_URL = "https://moahmedwafy-modarb-be.hf.space/"
+    var BASE_URL = "http://10.0.2.2/fitness_api/"
 
     fun changeBaseUrl(newUrl: String) {
         BASE_URL = newUrl
