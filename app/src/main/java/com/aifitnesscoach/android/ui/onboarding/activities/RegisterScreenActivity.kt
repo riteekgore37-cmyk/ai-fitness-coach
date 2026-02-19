@@ -16,14 +16,17 @@ import com.aifitnesscoach.android.ui.onboarding.viewModel.UserViewModel
 import com.aifitnesscoach.android.ui.onboarding.viewModel.UserViewModelFactory
 
 class RegisterScreenActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityRegisterScreenBinding
     private lateinit var viewModel: UserViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterScreenBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
+
         initViewModels()
+        observeResponse()
         doRegister()
     }
 
@@ -37,57 +40,69 @@ class RegisterScreenActivity : AppCompatActivity() {
 
     private fun doRegister() {
         binding.registerButton.setOnClickListener {
+
             val name = binding.nameEditText.text.toString().trim()
             val email = binding.emailEditText2.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
             val confirmPassword = binding.confirmPasswordEditText.text.toString().trim()
 
             if (isValidInput()) {
+
                 UserRegisterData.registerRequest.name = name
                 UserRegisterData.registerRequest.email = email
                 UserRegisterData.registerRequest.password = password
                 UserRegisterData.registerRequest.confirmPassword = confirmPassword
-                UserRegisterData.printData()
+
                 binding.progessView.progressOverlay.visibility = View.VISIBLE
+
                 viewModel.registerUser(UserRegisterData.registerRequest)
             }
         }
-        UserRegisterData.printData()
-
-        getResponse()
     }
 
-    private fun getResponse() {
+    private fun observeResponse() {
         viewModel.registerResponse.observe(this) { response ->
-            RetrofitService.handleRequest(
-                response = response,
-                onSuccess = { loginResponse ->
-                    if (loginResponse.status == 200) {
-                        Toast.makeText(
-                            this,
-                            getString(R.string.welcome_please_login_to_complete_your_register),
-                            Toast.LENGTH_LONG
-                        ).show()
 
-                        val intent = Intent(this, WelcomeScreenActivity::class.java)
-                        intent.putExtra("register", true)
-                        startActivity(intent)
-                        this.finish()
-                    }
-                },
-                onError = { errorResponse ->
-                    val defaultErrorMessage = getString(R.string.an_error_occurred)
-                    val message = errorResponse?.errors?.firstOrNull() ?: errorResponse?.error
-                    ?: defaultErrorMessage
-                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                }
-            )
             binding.progessView.progressOverlay.visibility = View.GONE
 
+            if (response.isSuccessful) {
+
+                val body = response.body()
+
+                if (body != null && body.success) {
+
+                    Toast.makeText(
+                        this,
+                        body.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    // Go to log in screen
+                    val intent = Intent(this, WelcomeScreenActivity::class.java)
+                    intent.putExtra("register", true)
+                    startActivity(intent)
+                    finish()
+
+                } else {
+                    Toast.makeText(
+                        this,
+                        body?.message ?: getString(R.string.an_error_occurred),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } else {
+                Toast.makeText(
+                    this,
+                    "Registration failed. Please try again.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
     private fun isValidInput(): Boolean {
+
         val name = binding.nameEditText.text.toString()
         val email = binding.emailEditText2.text.toString()
         val password = binding.passwordEditText.text.toString()
@@ -113,13 +128,10 @@ class RegisterScreenActivity : AppCompatActivity() {
             return false
         }
 
-
         return true
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this@RegisterScreenActivity, message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
-
 }

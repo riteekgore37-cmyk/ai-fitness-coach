@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitService {
 
-    var BASE_URL = "http://10.0.2.2/fitness_api/"
+    var BASE_URL = "https://ai-fitness-backend-s9p1.onrender.com/"
 
     fun changeBaseUrl(newUrl: String) {
         BASE_URL = newUrl
@@ -57,6 +57,9 @@ object RetrofitService {
         // Create an OkHttpClient and attach the logging interceptor
         val client: OkHttpClient = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .build()
 
         try {
