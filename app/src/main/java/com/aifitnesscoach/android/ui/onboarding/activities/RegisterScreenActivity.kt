@@ -9,7 +9,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityRegisterScreenBinding
 import com.aifitnesscoach.android.network.RetrofitService
+import com.aifitnesscoach.android.ui.home.HomeActivity
+import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.models.UserRegisterData
+import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
 import com.aifitnesscoach.android.ui.onboarding.viewModel.UserRepository
 import com.aifitnesscoach.android.ui.onboarding.viewModel.UserViewModel
@@ -20,13 +23,18 @@ class RegisterScreenActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterScreenBinding
     private lateinit var viewModel: UserViewModel
 
+    // Save email & password temporarily for auto login
+    private var registeredEmail: String = ""
+    private var registeredPassword: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initViewModels()
-        observeResponse()
+        observeRegisterResponse()
+        observeLoginResponse()
         doRegister()
     }
 
@@ -48,6 +56,10 @@ class RegisterScreenActivity : AppCompatActivity() {
 
             if (isValidInput()) {
 
+                // Store for auto login
+                registeredEmail = email
+                registeredPassword = password
+
                 UserRegisterData.registerRequest.name = name
                 UserRegisterData.registerRequest.email = email
                 UserRegisterData.registerRequest.password = password
@@ -60,10 +72,9 @@ class RegisterScreenActivity : AppCompatActivity() {
         }
     }
 
-    private fun observeResponse() {
+    // 🔹 Observe Register API
+    private fun observeRegisterResponse() {
         viewModel.registerResponse.observe(this) { response ->
-
-            binding.progessView.progressOverlay.visibility = View.GONE
 
             if (response.isSuccessful) {
 
@@ -77,13 +88,11 @@ class RegisterScreenActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
 
-                    // Go to log in screen
-                    val intent = Intent(this, WelcomeScreenActivity::class.java)
-                    intent.putExtra("register", true)
-                    startActivity(intent)
-                    finish()
+                    // ✅ Automatically call login
+                    viewModel.loginUser(registeredEmail, registeredPassword)
 
                 } else {
+                    binding.progessView.progressOverlay.visibility = View.GONE
                     Toast.makeText(
                         this,
                         body?.message ?: getString(R.string.an_error_occurred),
@@ -92,9 +101,61 @@ class RegisterScreenActivity : AppCompatActivity() {
                 }
 
             } else {
+                binding.progessView.progressOverlay.visibility = View.GONE
                 Toast.makeText(
                     this,
                     "Registration failed. Please try again.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    // 🔹 Observe Login API
+    private fun observeLoginResponse() {
+        viewModel.loginResponse.observe(this) { response ->
+
+            binding.progessView.progressOverlay.visibility = View.GONE
+
+            if (response.isSuccessful) {
+
+                val body = response.body()
+
+                if (body != null && body.success) {
+
+                    // ✅ Save session
+                    UserPrefUtil.saveSession(
+                        this,
+                        Session(
+                            user = body.user,
+                            token = body.token
+                        )
+                    )
+
+                    UserPrefUtil.setUserLoggedIn(this, true)
+
+                    Toast.makeText(
+                        this,
+                        "Welcome ${body.user.name}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // ✅ Go to Home
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    finish()
+
+                } else {
+                    Toast.makeText(
+                        this,
+                        body?.message ?: "Login failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } else {
+                Toast.makeText(
+                    this,
+                    "Auto login failed. Please login manually.",
                     Toast.LENGTH_SHORT
                 ).show()
             }

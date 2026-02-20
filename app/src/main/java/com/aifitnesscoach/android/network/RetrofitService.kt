@@ -9,7 +9,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 object RetrofitService {
-
     var BASE_URL = "https://ai-fitness-backend-s9p1.onrender.com/"
 
     fun changeBaseUrl(newUrl: String) {

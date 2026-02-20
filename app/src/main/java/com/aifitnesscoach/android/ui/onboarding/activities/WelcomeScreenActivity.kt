@@ -2,7 +2,6 @@ package com.aifitnesscoach.android.ui.onboarding.activities
 
 import android.app.AlertDialog
 import android.content.Intent
-import com.aifitnesscoach.android.ui.onboarding.models.Session
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -18,6 +17,7 @@ import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityWelcomeScreenBinding
 import com.aifitnesscoach.android.network.RetrofitService
 import com.aifitnesscoach.android.ui.home.HomeActivity
+import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
 import com.aifitnesscoach.android.ui.onboarding.viewModel.UserRepository
@@ -34,6 +34,14 @@ class WelcomeScreenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ If already logged in → go directly to Home
+        if (UserPrefUtil.isUserLoggedIn(this)) {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+            return
+        }
+
         binding = ActivityWelcomeScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -59,13 +67,12 @@ class WelcomeScreenActivity : AppCompatActivity() {
                 val newUrl = input.text.toString()
                 if (newUrl.isNotEmpty()) {
                     RetrofitService.changeBaseUrl(newUrl)
-                    startActivity(Intent(this, WelcomeScreenActivity::class.java))
-                    finish()
+                    recreate()
                 }
             }
 
             builder.setNegativeButton("Cancel") { dialog, _ ->
-                dialog.cancel()
+                dialog.dismiss()
             }
 
             builder.show()
@@ -105,7 +112,12 @@ class WelcomeScreenActivity : AppCompatActivity() {
 
                 if (body != null && body.success) {
 
-                    // Save token
+                    // ✅ DISMISS bottom sheet (Fix WindowLeaked)
+                    if (bottomSheet.isShowing) {
+                        bottomSheet.dismiss()
+                    }
+
+                    // ✅ Save session
                     UserPrefUtil.saveSession(
                         this,
                         Session(
@@ -113,7 +125,6 @@ class WelcomeScreenActivity : AppCompatActivity() {
                             token = body.token
                         )
                     )
-
 
                     UserPrefUtil.setUserLoggedIn(this, true)
 
@@ -123,10 +134,7 @@ class WelcomeScreenActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    startActivity(
-                        Intent(this, HomeActivity::class.java)
-                    )
-
+                    startActivity(Intent(this, HomeActivity::class.java))
                     finish()
 
                 } else {
