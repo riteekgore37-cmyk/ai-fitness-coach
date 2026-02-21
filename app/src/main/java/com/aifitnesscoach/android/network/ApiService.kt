@@ -20,24 +20,37 @@ import com.aifitnesscoach.android.ui.home.ui.workouts.models.workout_programs.Wo
 import com.aifitnesscoach.android.ui.onboarding.models.LoginResponse
 import com.aifitnesscoach.android.ui.onboarding.models.RequestModels.LoginRequest
 import com.aifitnesscoach.android.ui.onboarding.models.RequestModels.RegisterRequest
+import com.aifitnesscoach.android.network.models.UpdateProfileRequest
+import com.aifitnesscoach.android.network.models.UpdateProfileResponse
+import com.aifitnesscoach.android.network.models.GetProfileResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
-    @POST("/api/v1/user/auth/login")
+    @POST("/api/v1/user/login")
     suspend fun loginUser(@Body loginRequest: LoginRequest): Response<LoginResponse>
 
 
-    @POST("/api/v1/user/auth/register")
+    @POST("/api/v1/user/register")
     suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<LoginResponse>
 
+    @PUT("api/v1/user/profile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateProfileRequest
+    ): Response<UpdateProfileResponse>
 
+    @GET("api/v1/user/profile")
+    suspend fun getProfile(
+        @Header("Authorization") token: String
+    ): Response<GetProfileResponse>
     // home page
     @GET("api/v1/user/homePage/")
     suspend fun getHomePage(
