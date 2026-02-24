@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.models.User
+import androidx.core.content.edit
 
 object UserPrefUtil {
 
@@ -18,9 +19,9 @@ object UserPrefUtil {
     fun saveSession(context: Context, session: Session) {
         val jsonData = gson.toJson(session)
         context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(SESSION_KEY, jsonData)
-            .apply()
+            .edit {
+                putString(SESSION_KEY, jsonData)
+            }
     }
 
     // ✅ Restore old compatibility function
@@ -48,9 +49,9 @@ object UserPrefUtil {
 
     fun setUserLoggedIn(context: Context, isLoggedIn: Boolean) {
         context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(LOGGED_IN_KEY, isLoggedIn)
-            .apply()
+            .edit {
+                putBoolean(LOGGED_IN_KEY, isLoggedIn)
+            }
     }
 
     fun isUserLoggedIn(context: Context): Boolean {
@@ -61,8 +62,8 @@ object UserPrefUtil {
 
     fun logout(context: Context) {
         context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .clear()
-            .apply()
+            .edit {
+                clear()
+            }
     }
 }

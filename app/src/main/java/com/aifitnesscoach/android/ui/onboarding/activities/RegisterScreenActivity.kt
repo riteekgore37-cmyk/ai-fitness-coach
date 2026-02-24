@@ -84,7 +84,7 @@ class RegisterScreenActivity : AppCompatActivity() {
 
                     Toast.makeText(
                         this,
-                        body.message,
+                        "Registration successful",
                         Toast.LENGTH_LONG
                     ).show()
 
@@ -95,7 +95,7 @@ class RegisterScreenActivity : AppCompatActivity() {
                     binding.progessView.progressOverlay.visibility = View.GONE
                     Toast.makeText(
                         this,
-                        body?.message ?: getString(R.string.an_error_occurred),
+                        getString(R.string.an_error_occurred),
                         Toast.LENGTH_SHORT
                     ).show()
                 }

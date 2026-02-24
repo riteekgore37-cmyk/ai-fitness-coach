@@ -58,7 +58,7 @@ class HomeFragment : Fragment() {
             startActivity(Intent(requireContext(), ProfileActivity::class.java))
         }
 
-        Log.d("User ID", UserPrefUtil.getUserData(requireContext())!!.user.id)
+        Log.d("User ID", UserPrefUtil.getUserData(requireContext())?.user?.id ?: "Unknown User ID")
         return root
     }
 
@@ -260,5 +260,4 @@ class HomeFragment : Fragment() {
     private fun formatWorkoutTime(minutesPerDay: Int, context: Context): String {
         return "$minutesPerDay ${context.getString(R.string.min)}"
     }
-
 }

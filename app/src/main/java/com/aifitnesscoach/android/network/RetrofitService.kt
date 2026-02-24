@@ -22,7 +22,7 @@ object RetrofitService {
                 response.body()?.let {
                     onSuccess(it)
                 } ?: onError(null)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 onError(null)
             }
         } else {
@@ -30,7 +30,7 @@ object RetrofitService {
                 val errorBody = response.errorBody()?.string()
                 val errorData: T? = errorBody?.let { parseErrorBody(it) }
                 onError(errorData)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 onError(null)
             }
         }
@@ -39,7 +39,7 @@ object RetrofitService {
     inline fun <reified T> parseErrorBody(errorBody: String): T? {
         return try {
             Gson().fromJson(errorBody, T::class.java)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

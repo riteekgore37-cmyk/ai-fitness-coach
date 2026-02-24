@@ -2,28 +2,41 @@ package com.aifitnesscoach.android.ui.home
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityHomeBinding
 
-
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val navView = binding.navView
-
-        val navController = findNavController(R.id.nav_host_fragment_activity_home)
-
-        navView.setupWithNavController(navController)
-
+        setupNavigation()
         handleIntent()
+    }
+
+    private fun setupNavigation() {
+
+        // Get NavHostFragment safely
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_home)
+                    as NavHostFragment
+
+        val navController = navHostFragment.navController
+
+        // Connect BottomNavigation with NavController
+        binding.navView.setupWithNavController(navController)
+
+        // Prevent crash on reselection
+        binding.navView.setOnItemReselectedListener {
+            // Do nothing
+        }
     }
 
     private fun handleIntent() {
