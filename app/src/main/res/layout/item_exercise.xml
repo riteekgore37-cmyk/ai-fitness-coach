@@ -81,7 +81,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:textColor="@color/primary_200"
+        android:textColor="#DDFFA4A4"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -93,7 +93,7 @@
 
     <TextView
         android:id="@+id/timer"
-        android:textColor="@color/primary_200"
+        android:textColor="#DAFFA4BE"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="32sp"

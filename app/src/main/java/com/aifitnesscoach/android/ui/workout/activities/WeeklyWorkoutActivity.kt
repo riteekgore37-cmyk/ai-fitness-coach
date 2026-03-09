@@ -33,30 +33,39 @@ class WeeklyWorkoutActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun setData() {
-        var totalSets = 0
-        val workoutData = WorkoutData.getTodayWorkout()
+        val workoutData = WorkoutData.getTodayWorkout() ?: return
+        val currentWeek = WorkoutData.getCurrentWeek() ?: return
 
-        for (i in workoutData!!.exercises) {
+        var totalSets = 0
+        for (i in workoutData.exercises) {
             totalSets += i.sets
         }
 
         binding.weekTitle.text =
-            "${WorkoutData.getCurrentWeek()!!.week_number}: ${WorkoutData.getCurrentWeek()!!.week_name}"
-        binding.weekDesc.text = WorkoutData.getCurrentWeek()!!.week_description
+            "${currentWeek.week_number}: ${currentWeek.week_name}"
+        binding.weekDesc.text = currentWeek.week_description
         binding.dayDetails.text =
-            "Day ${workoutData.day_number} / ${WorkoutData.getWeekDaysCount()} - ${WorkoutData.getTodayWorkout()?.day_type}"
+            "Day ${workoutData.day_number} / ${WorkoutData.getWeekDaysCount()} - ${workoutData.day_type}"
         binding.exerciseCount.text = "Exercises \n ${workoutData.total_number_exercises}"
         binding.setsCount.text = "Sets \n ${totalSets}"
-        binding.expectedTime.text = "Duration \n ${workoutData.exercises.get(0).duration} min"
+        
+        val duration = if (workoutData.exercises.isNotEmpty()) {
+            workoutData.exercises[0].duration.toString()
+        } else {
+            "0"
+        }
+        binding.expectedTime.text = "Duration \n $duration min"
     }
 
     private fun setTimeLineRecycler() {
         binding.timelineRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        val adapter = DaysTimeLineAdapter(getTheDays())
-        binding.timelineRecyclerView.adapter = adapter
-
+        val days = getTheDays()
+        if (days != null) {
+            val adapter = DaysTimeLineAdapter(days)
+            binding.timelineRecyclerView.adapter = adapter
+        }
     }
 
     private fun setRecycleData() {
@@ -73,9 +82,10 @@ class WeeklyWorkoutActivity : AppCompatActivity() {
         }
     }
 
-    private fun getTheDays(): ArrayList<Day> {
-        val days: ArrayList<Day> = WorkoutData.getCurrentWeek()!!.days as ArrayList<Day>
-        if (days[days.size - 1].day_number != 99) {
+    private fun getTheDays(): ArrayList<Day>? {
+        val currentWeek = WorkoutData.getCurrentWeek() ?: return null
+        val days: ArrayList<Day> = ArrayList(currentWeek.days)
+        if (days.isNotEmpty() && days[days.size - 1].day_number != 99) {
             val dummyDay = Day(
                 day_number = 99,
                 day_type = "Dummy Day",

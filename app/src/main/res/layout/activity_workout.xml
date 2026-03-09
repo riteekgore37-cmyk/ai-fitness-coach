@@ -16,10 +16,10 @@
         android:layout_width="match_parent"
         android:layout_height="15dp"
         android:background="@color/grey_900"
-        app:tabIndicatorColor="@color/primary_400"
+        app:tabIndicatorColor="@color/button"
         app:tabIndicatorFullWidth="true"
         app:tabIndicatorHeight="8dp"
-        app:tabSelectedTextColor="@color/primary_800" />
+        app:tabSelectedTextColor="#8C1F3A" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/exercise_pager"

@@ -26,7 +26,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     ): ApiResult<TodayMealsResponse> {
 
         return try {
-            val response = apiService.getToadyMeals(token)
+            val response = apiService.getTodayMeals()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -46,7 +46,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     ): ApiResult<DailyGoalsResponse> {
 
         return try {
-            val response = apiService.getDailyGoals(token)
+            val response = apiService.getDailyGoals()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -64,7 +64,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     override suspend fun getTodayInTake(token: String): ApiResult<TodayInTakeResponse> {
 
         return try {
-            val response = apiService.getTodayInTake(token)
+            val response = apiService.getTodayInTake()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -81,7 +81,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun getMyMealPlan(token: String): ApiResult<MyMealPlanResponse> {
         return try {
-            val response = apiService.getMyMealPlan(token)
+            val response = apiService.getMyMealPlan()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -98,7 +98,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun getAllMealsPlans(token: String): ApiResult<AllMealsPlansResponse> {
         return try {
-            val response = apiService.getAllMealsPlan(token)
+            val response = apiService.getAllMealsPlan()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -117,7 +117,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         token: String, page: Int, limit: Int
     ): ApiResult<IngredientsResponse> {
         return try {
-            val response = apiService.getIngredients(token, page, limit)
+            val response = apiService.getIngredients( page, limit)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -136,7 +136,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         token: String, searchTerm: String,
     ): ApiResult<IngredientsResponse> {
         return try {
-            val response = apiService.searchIngredients(token, searchTerm)
+            val response = apiService.searchIngredients(searchTerm)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -156,7 +156,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         data: AddCustomMealBody
     ): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.addCustomMeal(token, data)
+            val response = apiService.addCustomMeal(data)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -173,7 +173,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun enrollIntoPlan(token: String, planId: PlanBody): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.enrollIntoPlanProgram(token, planId)
+            val response = apiService.enrollIntoPlanProgram( planId)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)

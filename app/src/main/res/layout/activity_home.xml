@@ -16,7 +16,7 @@
         android:layout_marginEnd="0dp"
         android:background="@color/grey_900"
         app:itemTextColor="@color/white"
-        app:itemIconTint="@color/neon_blue"
+        app:itemIconTint="@color/button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

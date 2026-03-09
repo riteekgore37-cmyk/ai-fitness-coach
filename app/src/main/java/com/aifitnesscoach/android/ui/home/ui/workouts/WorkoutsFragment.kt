@@ -38,6 +38,7 @@ import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+
 class WorkoutsFragment : Fragment(), OnBodyPartClickListener, OnWorkoutItemClickListener {
 
 
@@ -47,7 +48,6 @@ class WorkoutsFragment : Fragment(), OnBodyPartClickListener, OnWorkoutItemClick
 
     private lateinit var bottomSheet: BottomSheetDialog
     private lateinit var exerciseInfoSheet: BottomSheetDialog
-
     private lateinit var viewModel: WorkoutViewModel
     private lateinit var bottomSheetProgressBar: ProgressBar
     private lateinit var exercisesAdapter: ExercisesAdapter
@@ -258,10 +258,9 @@ class WorkoutsFragment : Fragment(), OnBodyPartClickListener, OnWorkoutItemClick
         }
     }
 
-    override fun onWorkoutItemClick(workoutData: Data) {
-        initExerciseInfoButton(workoutData)
+    override fun onWorkoutItemClick(workoutId: Data) {
+        initExerciseInfoButton(workoutId)
     }
-
 
     private fun updateTextViews(data: Data, binding: WorkoutEnrollViewBinding) {
         binding.planDesc.text = data.description

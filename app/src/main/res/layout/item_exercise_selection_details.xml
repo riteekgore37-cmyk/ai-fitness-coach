@@ -86,7 +86,7 @@
         android:layout_marginEnd="8dp"
         android:gravity="start"
         android:text="@string/workoutDescription"
-        android:textColor="@color/lavender_blue"
+        android:textColor="#B4FFC2C2"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/card"
         app:layout_constraintEnd_toStartOf="@+id/checkMark"

@@ -26,7 +26,8 @@ class TodayWorkoutActivity : AppCompatActivity() {
     private fun setRecyclerView() {
         binding.recyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        val adapter = WorkoutAdapter(WorkoutData.getTodayWorkout(), this)
+        val workoutData = WorkoutData.getTodayWorkout()
+        val adapter = WorkoutAdapter(workoutData, this)
         binding.recyclerView.adapter = adapter
         setData()
 
@@ -35,15 +36,22 @@ class TodayWorkoutActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun setData() {
-        var totalSets = 0
-        val workoutData = WorkoutData.getTodayWorkout()
+        val workoutData = WorkoutData.getTodayWorkout() ?: return
 
-        for (i in workoutData!!.exercises) {
+        var totalSets = 0
+        for (i in workoutData.exercises) {
             totalSets += i.sets
         }
         binding.exerciseCount.text = "Exercises \n ${workoutData.total_number_exercises}"
         binding.setsCount.text = "Sets \n ${totalSets}"
-        binding.timeCount.text = "Duration \n ${workoutData.exercises.get(0).duration} min"
+        
+        val duration = if (workoutData.exercises.isNotEmpty()) {
+            workoutData.exercises[0].duration.toString()
+        } else {
+            "0"
+        }
+        binding.timeCount.text = "Duration \n $duration min"
+
         binding.dayNum.text = "Day " + workoutData.day_number
         binding.exerciseName.text = workoutData.day_type
     }

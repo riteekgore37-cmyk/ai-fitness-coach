@@ -65,7 +65,7 @@ class SelectGenderView(view: View) {
 
     private fun formatDate(date: Date): String {
         // Format the date into "YYYY/MM/DD" format
-        val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return dateFormat.format(date)
     }
 

@@ -1,6 +1,7 @@
 package com.aifitnesscoach.android.ui.home.ui.plan.persentation
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
@@ -24,10 +25,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class PlanViewModel : ViewModel() {
+class PlanViewModel(application: Application) : AndroidViewModel(application) {
 
 
-    private var apiService = RetrofitService.createService()
+    private var apiService = RetrofitService.getApiService(getApplication())
     private var myPlanRepository = PlanRepositoryImp(apiService)
     private var myPlanPageUseCase = PlanPageUseCase(myPlanRepository)
     private var getCustomWorkoutUseCase = GetCustomWorkoutUseCase(myPlanRepository)

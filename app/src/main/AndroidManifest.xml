@@ -19,6 +19,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Modarb"
         android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true"
+        android:hardwareAccelerated="true"
         tools:ignore="DiscouragedApi"
         tools:targetApi="35">
         <activity android:name=".posedetection.RequestPermissionsActivity" />

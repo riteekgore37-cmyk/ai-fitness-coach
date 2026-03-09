@@ -13,7 +13,7 @@ class IngredientsPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Data> {
         val page = params.key ?: 0
         try {
-            val response = apiService.getIngredients(token, page, params.loadSize)
+            val response = apiService.getIngredients(page, params.loadSize)
 
             return LoadResult.Page(
                 data = response.body()!!.data,

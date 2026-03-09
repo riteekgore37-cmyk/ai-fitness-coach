@@ -24,7 +24,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
     ): ApiResult<PlanPageResponse> {
 
         return try {
-            val response = apiService.getPlanPage(workoutId, token)
+            val response = apiService.getPlanPage(workoutId)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -41,7 +41,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
 
     override suspend fun getCustomWorkouts(token: String): ApiResult<CustomWorkoutResponse> {
         return try {
-            val response = apiService.getCustomWorkouts(token)
+            val response = apiService.getCustomWorkouts()
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -61,7 +61,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, filterName: String, filterVal: String, page: Int, limit: Int
     ): ApiResult<ExercisesResponse> {
         return try {
-            val response = apiService.getExercises(token, filterName, filterVal, page, limit)
+            val response = apiService.getExercises (filterName, filterVal, page, limit)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -81,7 +81,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, searchTerm: String, filter: String
     ): ApiResult<ExercisesResponse> {
         return try {
-            val response = apiService.getExercisesSearch(token, searchTerm, filter)
+            val response = apiService.getExercisesSearch(searchTerm, filter)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -100,7 +100,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, createCustomWorkoutRequest: CreateCustomWorkoutRequest
     ): ApiResult<CreateCustomWorkoutResponse> {
         return try {
-            val response = apiService.createCustomWorkout(token, createCustomWorkoutRequest)
+            val response = apiService.createCustomWorkout(createCustomWorkoutRequest)
 
             if (response.isSuccessful) {
                 response.body()?.let {

@@ -63,7 +63,10 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
     }
 
     fun startSound(position: Int) {
-        if (position != -1 && exercises[position].isStartedSound) return
+        if (position != -1) {
+            if (position < 0 || position >= exercises.size) return
+            if (exercises[position].isStartedSound) return
+        }
         val mediaPlayer = MediaPlayer.create(
             context, R.raw.start_sound
         )
@@ -72,6 +75,7 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
     }
 
     fun startHelpSound(position: Int) {
+        if (position < 0 || position >= exercises.size) return
         if (exercises[position].isStartedHelpSound) return
 
         textToSpeech = TextToSpeech(
@@ -104,6 +108,7 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
 
     fun stopSound(currentPosition: Int) {
         if (textToSpeech == null) return
+        if (currentPosition < 0 || currentPosition >= exercises.size) return
         exercises[currentPosition].isStartedSound = true
         if (textToSpeech!!.isSpeaking) textToSpeech!!.stop()
     }
@@ -143,6 +148,7 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
 
 
     fun initTimer(position: Int, currentView: View) {
+        if (position < 0 || position >= exercises.size) return
         val binding = ItemExerciseBinding.bind(currentView)
 
         exercises[position].countDownTimer =
@@ -170,34 +176,40 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
     }
 
     private fun timerEnded(position: Int) {
+        if (position < 0 || position >= exercises.size) return
         exercises[position].isTimeExerciseDone = true
     }
 
     fun isStarted(position: Int): Boolean {
+        if (position < 0 || position >= exercises.size) return false
         val exercise = exercises[position]
         return exercise.isStarted
     }
 
     fun startTimer(position: Int) {
-        exercises[position].countDownTimer!!.start()
+        if (position < 0 || position >= exercises.size) return
+        exercises[position].countDownTimer?.start()
         exercises[position].isStarted = true
         notifyDataSetChanged()
     }
 
     fun pauseTimer(position: Int) {
+        if (position < 0 || position >= exercises.size) return
         val exercise = exercises[position]
-        exercise.countDownTimer!!.cancel()
+        exercise.countDownTimer?.cancel()
         exercise.isStarted = false
         notifyDataSetChanged()
     }
 
 
     fun logExercise(position: Int) {
+        if (position < 0 || position >= exercises.size) return
         val exercise = exercises[position]
         Log.d("Exercise", "${exercise.sets} sets, ${exercise._currentSetCount}")
     }
 
     fun isExerciseDone(position: Int): Boolean {
+        if (position < 0 || position >= exercises.size) return false
         val exercise = exercises[position]
         Log.d(
             exercise.name + " pos= " + "${position}",
@@ -207,10 +219,12 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
     }
 
     fun isTimedExerciseDone(position: Int): Boolean {
+        if (position < 0 || position >= exercises.size) return false
         return exercises[position].isTimeExerciseDone
     }
 
     fun isTimedExercise(position: Int): Boolean {
+        if (position < 0 || position >= exercises.size) return false
         return timedExercise.find { it == position } != null || exercises[position].duration > 0
     }
 
@@ -220,6 +234,7 @@ class ExercisePagerAdapter(private val context: Context, private var listener: E
     }
 
     fun markDone(currentPosition: Int) {
+        if (currentPosition < 0 || currentPosition >= exercises.size) return
         exercises[currentPosition]._isDone = true
     }
 

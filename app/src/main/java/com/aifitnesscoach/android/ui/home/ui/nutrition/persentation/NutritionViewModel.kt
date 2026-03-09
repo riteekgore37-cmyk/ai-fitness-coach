@@ -1,6 +1,7 @@
-package com.aifitnesscoach.android.ui.home.ui.nutrition.presentation
+package com.aifitnesscoach.android.ui.home.ui.nutrition.persentation
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
@@ -21,6 +22,7 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.usecase.GetTodayIn
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.usecase.GetTodayMealUseCase
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.usecase.SearchIngredientsUseCase
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.AddCustomMealBody
+import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.IngredientsResponse
 import com.aifitnesscoach.android.ui.home.ui.plan.data.NutritionRepositoryImp
 import kotlinx.coroutines.flow.Flow
@@ -33,16 +35,20 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+
 data class NutritionData(
     val todayMeals: ApiResult<TodayMealsResponse>?,
     val todayInTake: ApiResult<TodayInTakeResponse>?,
     val myMealPlan: ApiResult<MyMealPlanResponse>?,
-    val allMealsPlans: ApiResult<AllMealsPlansResponse>?
+    val allMealsPlans: ApiResult<AllMealsPlansResponse>?,
+    val dailyGoals: ApiResult<DailyGoalsResponse>?
 )
 
-class NutritionViewModel : ViewModel() {
+class NutritionViewModel(application: Application) : AndroidViewModel(application){
 
-    private var apiService = RetrofitService.createService()
+    private val apiService =
+        RetrofitService.getApiService(application.applicationContext)
+
     private var nutritionRepository = NutritionRepositoryImp(apiService)
     private var todayMealUseCase = GetTodayMealUseCase(nutritionRepository)
     private var getDailyGoalsUseCase = GetDailyGoalsUseCase(nutritionRepository)
@@ -50,6 +56,7 @@ class NutritionViewModel : ViewModel() {
     private var myMealPlanUseCase = GetMyMealPlanUseCase(nutritionRepository)
     private var allMyMealsPlansUseCase = GetAllMyMealsPlansUseCase(nutritionRepository)
     private var searchExercisesUseCase = SearchIngredientsUseCase(nutritionRepository)
+
     private var getAlliNutrientsUseCase = GetAllIngredientsUseCase(nutritionRepository)
 
     private val _todayMealsResponse = MutableStateFlow<ApiResult<TodayMealsResponse>?>(null)
@@ -67,10 +74,10 @@ class NutritionViewModel : ViewModel() {
 
     val getAllIngredients: StateFlow<ApiResult<IngredientsResponse>?> get() = _getAllIngredients
     val combinedNutritionData: StateFlow<NutritionData> = combine(
-        _todayMealsResponse, _getTodayInTake, _getMyMealPlan, _getAllMealsPlan
-    ) { todayMeals, todayInTake, myMealPlan, allMealsPlans ->
-        NutritionData(todayMeals, todayInTake, myMealPlan, allMealsPlans)
-    }.stateIn(viewModelScope, SharingStarted.Lazily, NutritionData(null, null, null, null))
+        _todayMealsResponse, _getTodayInTake, _getMyMealPlan, _getAllMealsPlan, _getDailyGoalsResponse
+    ) { todayMeals, todayInTake, myMealPlan, allMealsPlans,dailyGoals->
+        NutritionData(todayMeals, todayInTake, myMealPlan, allMealsPlans, dailyGoals)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, NutritionData(null, null, null, null, null))
 
     fun getAllNutritionData(token: String) {
         viewModelScope.launch {
@@ -84,7 +91,7 @@ class NutritionViewModel : ViewModel() {
 
     fun getPaginatedExercises(
         token: String
-    ): Flow<PagingData<com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data>> {
+    ): Flow<PagingData<Data>> {
         return nutritionRepository.getIngredientsPagingData(token).cachedIn(viewModelScope)
     }
 

@@ -37,8 +37,8 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.models.AddCustomMealBody
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.Ingredient
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.IngredientsResponse
-import com.aifitnesscoach.android.ui.home.ui.nutrition.presentation.NutritionData
-import com.aifitnesscoach.android.ui.home.ui.nutrition.presentation.NutritionViewModel
+import com.aifitnesscoach.android.ui.home.ui.nutrition.persentation.NutritionData
+import com.aifitnesscoach.android.ui.home.ui.nutrition.persentation.NutritionViewModel
 import com.aifitnesscoach.android.ui.home.ui.plan.adapters.ViewPager2ViewHeightAnimator
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import kotlinx.coroutines.flow.collectLatest
@@ -69,7 +69,9 @@ class NutritionFragment : Fragment(), OnMealClickListener {
     private fun requestData() {
         viewModel = ViewModelProvider(this)[NutritionViewModel::class.java]
 
-        viewModel.getAllNutritionData("Bearer ${UserPrefUtil.getUserData(requireContext())!!.token}")
+        val token = "Bearer ${UserPrefUtil.getUserData(requireContext())?.token}"
+
+        viewModel.getAllNutritionData(token)
     }
 
     private fun initViewPager(
@@ -263,7 +265,6 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         var todayInTakeResponse: TodayInTakeResponse? = null
         var allMealsResponse: AllMealsPlansResponse? = null
         var myMealsResponse: MyMealPlanResponse? = null
-        var dailyGoalsResponse: DailyGoalsResponse? = null
 
         handleApiResult(TodayMealsResponse::class, nutritionData.todayMeals) {
             todayMealsResponse = it
@@ -278,13 +279,17 @@ class NutritionFragment : Fragment(), OnMealClickListener {
             myMealsResponse = it
         }
 
+        val finalTodayMeals = todayMealsResponse
+        val finalTodayInTake = todayInTakeResponse
+        val finalAllMeals = allMealsResponse
+        val finalMyMeals = myMealsResponse
 
-        if (todayMealsResponse != null && todayInTakeResponse != null && allMealsResponse != null && myMealsResponse != null) {
+        if (finalTodayMeals != null && finalTodayInTake != null && finalAllMeals != null && finalMyMeals != null) {
             initViewPager(
-                todayMealsResponse!!,
-                todayInTakeResponse!!,
-                allMealsResponse!!,
-                myMealsResponse!!,
+                finalTodayMeals,
+                finalTodayInTake,
+                finalAllMeals,
+                finalMyMeals,
             )
         }
     }
@@ -391,7 +396,7 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         for (ingredient in ingredientsAdapter.getSelectedData()) {
             list.add(Ingredient(ingredient.id, ingredient.servings_count))
         }
-        var data = AddCustomMealBody(list)
+        val data = AddCustomMealBody(list)
         viewModel.addCustomMeal(
             "Bearer ${UserPrefUtil.getUserData(requireContext())?.token}", data
         )

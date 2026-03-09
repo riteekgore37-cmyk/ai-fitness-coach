@@ -17,10 +17,13 @@ object WorkoutData {
     private var selectedCustomExercisesList: MutableList<Data> = mutableListOf()
 
     fun getWeekDaysCount(): Int {
+        if (!::weekList.isInitialized || weekList.isEmpty()) return 0
+        if (currentWeekPosition < 0 || currentWeekPosition >= weekList.size) return 0
         return weekList[currentWeekPosition].days.size
     }
 
     fun getCurrentWeek(): Week? {
+        if (!::weekList.isInitialized) return null
         for (week in weekList) {
             if (!week.is_done) {
                 return week
@@ -30,7 +33,7 @@ object WorkoutData {
     }
 
     fun getTodayWorkout(): Day? {
-
+        if (!::weekList.isInitialized) return null
         for (week in weekList) {
             if (!week.is_done) {
                 for (day in week.days) {

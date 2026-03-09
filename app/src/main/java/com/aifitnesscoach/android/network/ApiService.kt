@@ -21,143 +21,99 @@ import com.aifitnesscoach.android.ui.onboarding.models.LoginResponse
 import com.aifitnesscoach.android.ui.onboarding.models.RequestModels.LoginRequest
 import com.aifitnesscoach.android.ui.onboarding.models.RequestModels.RegisterRequest
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.PATCH
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface ApiService {
+
     @POST("/api/v1/user/auth/login")
     suspend fun loginUser(@Body loginRequest: LoginRequest): Response<LoginResponse>
-
 
     @POST("/api/v1/user/auth/register")
     suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<LoginResponse>
 
+    // HOME
+    @GET("/api/v1/user/homePage")
+    suspend fun getHomePage(): Response<HomePageResponse>
 
-    // home page
-    @GET("api/v1/user/homePage/")
-    suspend fun getHomePage(
-        @Header("Authorization") token: String
-    ): Response<HomePageResponse>
+    @GET("/api/v1/user/homePage/your-daily-intake")
+    suspend fun getHomePageTodayInTake(): Response<TodayInTakeResponse>
 
-
-    // My Plan Page
-    @GET("api/v1/user/myWorkouts/{id}")
-    suspend fun getPlanPage(
-        @Path("id") myWorkoutId: String, @Header("Authorization") token: String
-    ): Response<PlanPageResponse>
-
-    // Workouts
+    // WORKOUT PLAN
+    @GET("/api/v1/user/myWorkouts/{id}")
+    suspend fun getPlanPage(@Path("id") myWorkoutId: String): Response<PlanPageResponse>
 
     @PATCH("/api/v1/user/myWorkouts/{id}/progress/{week}/{day}")
     suspend fun markDoneWorkout(
         @Path("id") myWorkoutId: String,
         @Path("week") week: Int,
-        @Path("day") day: Int,
-        @Header("Authorization") token: String
+        @Path("day") day: Int
     ): Response<BaseResponse>
 
+    @GET("/api/v1/user/workouts?limit=200")
+    suspend fun getWorkoutPrograms(): Response<WorkoutProgramsResponse>
 
-    // Custom workouts page
-    // TODO add paging
-    @GET("api/v1/user/templates?limit=200")
-    suspend fun getCustomWorkouts(
-        @Header("Authorization") token: String
-    ): Response<CustomWorkoutResponse>
+    @POST("/api/v1/user/myWorkouts")
+    suspend fun enrollWorkoutProgram(@Body workoutId: Workout): Response<BaseResponse>
 
-    // TODO add paging
-    @GET("api/v1/user/workouts?limit=200")
-    suspend fun getWorkoutPrograms(
-        @Header("Authorization") token: String,
-    ): Response<WorkoutProgramsResponse>
+    // CUSTOM WORKOUT
+    @GET("/api/v1/user/templates?limit=200")
+    suspend fun getCustomWorkouts(): Response<CustomWorkoutResponse>
 
-    @POST("api/v1/user/myWorkouts")
-    suspend fun enrollWorkoutProgram(
-        @Header("Authorization") token: String, @Body workoutId: Workout
-    ): Response<BaseResponse>
+    @POST("/api/v1/user/templates")
+    suspend fun createCustomWorkout(
+        @Body customWorkoutRequest: CreateCustomWorkoutRequest
+    ): Response<CreateCustomWorkoutResponse>
 
-    // Exercises Selection APIs
-    @GET("api/v1/user/exercises/")
+    // EXERCISES
+    @GET("/api/v1/user/exercises")
     suspend fun getExercises(
-        @Header("Authorization") token: String,
         @Query("filterName") filterCat: String,
         @Query("filterVal") filterVal: String,
         @Query("skip") skip: Int,
         @Query("limit") limit: Int
     ): Response<ExercisesResponse>
 
-    @GET("api/v1/user/exercises/search")
+    @GET("/api/v1/user/exercises/search")
     suspend fun getExercisesSearch(
-        @Header("Authorization") token: String,
         @Query("searchTerm") search: String,
         @Query("filter") filter: String
     ): Response<ExercisesResponse>
 
-    // Create custom workout
-    @POST("api/v1/user/templates")
-    suspend fun createCustomWorkout(
-        @Header("Authorization") token: String,
-        @Body customWorkoutRequest: CreateCustomWorkoutRequest
-    ): Response<CreateCustomWorkoutResponse>
+    // NUTRITION
+    @GET("/api/v1/user/nutri-guide/today-meals")
+    suspend fun getTodayMeals(): Response<TodayMealsResponse>
 
-    // Nutrition API's
+    @GET("/api/v1/user/nutri-guide/daily-goals")
+    suspend fun getDailyGoals(): Response<DailyGoalsResponse>
 
-    @GET("api/v1/user/nutri-guide/today-meals")
-    suspend fun getToadyMeals(
-        @Header("Authorization") token: String,
-    ): Response<TodayMealsResponse>
+    @GET("/api/v1/user/nutri-guide/todays-intake")
+    suspend fun getTodayInTake(): Response<TodayInTakeResponse>
 
-    @GET("api/v1/user/nutri-guide/daily-goals")
-    suspend fun getDailyGoals(
-        @Header("Authorization") token: String,
-    ): Response<DailyGoalsResponse>
+    @GET("/api/v1/user/myMealPlan")
+    suspend fun getMyMealPlan(): Response<MyMealPlanResponse>
 
-    @GET("api/v1/user/nutri-guide/todays-intake")
-    suspend fun getTodayInTake(
-        @Header("Authorization") token: String,
-    ): Response<TodayInTakeResponse>
+    @GET("/api/v1/user/mealPlans?limit=200")
+    suspend fun getAllMealsPlan(): Response<AllMealsPlansResponse>
 
-
-    @GET("api/v1/user/myMealPlan")
-    suspend fun getMyMealPlan(
-        @Header("Authorization") token: String,
-    ): Response<MyMealPlanResponse>
-
-    @GET("api/v1/user/mealPlans?limit=200")
-    suspend fun getAllMealsPlan(
-        @Header("Authorization") token: String,
-    ): Response<AllMealsPlansResponse>
-
-    @GET("/api/v1/user/homePage/your-daily-intake")
-    suspend fun getHomePageTodayInTake(
-        @Header("Authorization") token: String,
-    ): Response<TodayInTakeResponse>
-
-    // Ingredients
+    // INGREDIENTS
     @GET("/api/v1/user/ingredients")
     suspend fun getIngredients(
-        @Header("Authorization") token: String, @Query("skip") skip: Int, @Query("limit") limit: Int
+        @Query("skip") skip: Int,
+        @Query("limit") limit: Int
     ): Response<IngredientsResponse>
 
-    //TODO handle paging here
     @GET("/api/v1/user/ingredients/search?limit=50")
     suspend fun searchIngredients(
-        @Header("Authorization") token: String, @Query("searchTerm") search: String
+        @Query("searchTerm") search: String
     ): Response<IngredientsResponse>
 
     @POST("/api/v1/user/meals/eat-custom-meal")
     suspend fun addCustomMeal(
-        @Header("Authorization") token: String, @Body data: AddCustomMealBody
+        @Body data: AddCustomMealBody
     ): Response<BaseResponse>
 
     @POST("/api/v1/user/myMealPlan")
     suspend fun enrollIntoPlanProgram(
-        @Header("Authorization") token: String, @Body data: PlanBody
+        @Body data: PlanBody
     ): Response<BaseResponse>
-
 }
-

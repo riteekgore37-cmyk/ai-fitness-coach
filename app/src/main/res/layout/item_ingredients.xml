@@ -17,7 +17,7 @@
         android:src="@drawable/baseline_add_circle_outline_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/primary_200"
+        app:tint="#D4FFA4A4"
         tools:ignore="ContentDescription" />
 
     <TextView

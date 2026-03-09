@@ -22,11 +22,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class WorkoutViewModel : ViewModel() {
+class WorkoutViewModel (application: Application) : AndroidViewModel(application) {
 
 
-    private var apiService = RetrofitService.createService()
+    private var apiService = RetrofitService.getApiService(getApplication())
     private var myPlanRepository = PlanRepositoryImp(apiService)
     private var workoutProgramsRepo = WorkoutRepoImpl(apiService)
     private var workoutsUseCase = GetWorkoutProgramsUseCase(workoutProgramsRepo)

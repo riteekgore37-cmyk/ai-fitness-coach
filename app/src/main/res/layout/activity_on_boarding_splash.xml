@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/darker_purple"
+    android:background="#000000"
     tools:context=".MainActivity">
 
 
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:dotsColor="@color/primary_200"
+        app:dotsColor="#FEE8E8"
         app:dotsCornerRadius="8dp"
         app:dotsSize="16dp"
         app:dotsSpacing="4dp"
@@ -35,7 +35,7 @@
         app:layout_constraintEnd_toEndOf="@+id/nextButton"
         app:layout_constraintStart_toStartOf="@+id/nextButton"
         app:progressMode="true"
-        app:selectedDotColor="@color/primary_400" />
+        app:selectedDotColor="@color/button" />
     <Button
         android:id="@+id/nextButton"
         android:layout_width="320dp"

@@ -28,7 +28,7 @@ class RegisterScreenActivity : AppCompatActivity() {
     }
 
     private fun initViewModels() {
-        val userRepository = UserRepository(RetrofitService.createService())
+        val userRepository = UserRepository(RetrofitService.getApiService(this))
         viewModel = ViewModelProvider(
             this,
             UserViewModelFactory(userRepository)

@@ -10,10 +10,14 @@ import com.aifitnesscoach.android.ui.workout.domain.usecase.MarkWorkoutDoneUseCa
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class WorkoutViewModel : ViewModel() {
+class WorkoutViewModel (application: Application) : AndroidViewModel(application) {
 
-    private val apiService = RetrofitService.createService()
+    private val apiService = RetrofitService.getApiService(getApplication())
     private val workoutRepository = WorkoutRepositoryImpl(apiService)
     private val markWorkoutDoneUseCase = MarkWorkoutDoneUseCase(workoutRepository)
 

@@ -11,23 +11,33 @@ import retrofit2.Response
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _loginResponse = MutableLiveData<Response<LoginResponse>>()
-    val loginResponse: LiveData<Response<LoginResponse>> = _loginResponse
+    private val _loginResponse = MutableLiveData<Response<LoginResponse>?>()
+    val loginResponse: LiveData<Response<LoginResponse>?> = _loginResponse
 
-    private val _registerResponse = MutableLiveData<Response<LoginResponse>>()
-    val registerResponse: LiveData<Response<LoginResponse>> = _registerResponse
+    private val _registerResponse = MutableLiveData<Response<LoginResponse>?>()
+    val registerResponse: LiveData<Response<LoginResponse>?> = _registerResponse
 
     fun loginUser(email: String, password: String) {
         viewModelScope.launch {
-            val response = userRepository.loginUser(email, password)
-            _loginResponse.value = response
+            try {
+                val response = userRepository.loginUser(email, password)
+                _loginResponse.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _loginResponse.value = null
+            }
         }
     }
 
     fun registerUser(registerRequest: RegisterRequest) {
         viewModelScope.launch {
-            val response = userRepository.registerUser(registerRequest)
-            _registerResponse.value = response
+            try {
+                val response = userRepository.registerUser(registerRequest)
+                _registerResponse.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _registerResponse.value = null
+            }
         }
     }
 }

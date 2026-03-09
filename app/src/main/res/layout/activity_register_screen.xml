@@ -174,7 +174,7 @@
         android:backgroundTint="@color/white"
         android:padding="14dp"
         android:text="@string/register"
-        android:textColor="@color/neon_blue"
+        android:textColor="@color/button"
         android:textSize="18sp"
         android:textStyle="bold"
         app:cornerRadius="12dp"

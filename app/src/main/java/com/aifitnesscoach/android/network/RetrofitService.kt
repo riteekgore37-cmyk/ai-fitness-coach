@@ -1,72 +1,77 @@
 package com.aifitnesscoach.android.network
 
+import android.content.Context
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
+import java.util.concurrent.TimeUnit
 
 object RetrofitService {
 
-    var BASE_URL = "https://moahmedwafy-modarb-be.hf.space/"
+    // 🔹 Must NOT be private because WelcomeScreen uses it
+    var BASE_URL = "https://ai-fitness-coach-backend-an8o.onrender.com/"
 
+    private var apiService: ApiService? = null
+
+    // 🔹 Change server at runtime
     fun changeBaseUrl(newUrl: String) {
         BASE_URL = newUrl
-    }
-    inline fun <reified T> handleRequest(
-        response: Response<T>, onSuccess: (T) -> Unit, onError: (T?) -> Unit
-    ) {
-        if (response.isSuccessful) {
-            try {
-                response.body()?.let {
-                    onSuccess(it)
-                } ?: onError(null)
-            } catch (e: Exception) {
-                onError(null)
-            }
-        } else {
-            try {
-                val errorBody = response.errorBody()?.string()
-                val errorData: T? = errorBody?.let { parseErrorBody(it) }
-                onError(errorData)
-            } catch (e: Exception) {
-                onError(null)
-            }
-        }
+        apiService = null // recreate retrofit
     }
 
-    inline fun <reified T> parseErrorBody(errorBody: String): T? {
-        return try {
-            Gson().fromJson(errorBody, T::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
+    fun getApiService(context: Context): ApiService {
 
-    fun createService(): ApiService {
-//        if (!NetworkHelper.isEmulator()) {
-//            BASE_URL = "http://192.168.1.9:4000/"
-//        }
+        if (apiService != null) {
+            return apiService!!
+        }
+
+        val tokenManager = TokenManager(context)
 
         val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+        logging.level = HttpLoggingInterceptor.Level.BODY
 
-
-        // Create an OkHttpClient and attach the logging interceptor
-        val client: OkHttpClient = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .addInterceptor(AuthInterceptor { tokenManager.getToken() })
             .addInterceptor(logging)
             .build()
 
-        try {
-            return Retrofit.Builder().baseUrl(BASE_URL).client(client)
-                .addConverterFactory(GsonConverterFactory.create()).build()
-                .create(ApiService::class.java)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
-        }
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        apiService = retrofit.create(ApiService::class.java)
+
+        return apiService!!
     }
 
+    inline fun <reified T> handleRequest(
+        response: Response<T>?,
+        onSuccess: (T) -> Unit,
+        onError: (T?) -> Unit
+    ) {
+        if (response == null) {
+            onError(null)
+            return
+        }
+        if (response.isSuccessful) {
+            response.body()?.let { onSuccess(it) } ?: onError(null)
+        } else {
+            try {
+                val errorBody = response.errorBody()?.string()
+                val errorData: T? = errorBody?.let { Gson().fromJson(it, T::class.java) }
+                onError(errorData)
+            } catch (_: Exception) {
+                onError(null)
+            }
+        }
+    }
 }

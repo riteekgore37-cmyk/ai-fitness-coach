@@ -13,10 +13,14 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.today_intak
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel (application: Application) : AndroidViewModel(application) {
 
-    private var apiService = RetrofitService.createService()
+    private var apiService = RetrofitService.getApiService(getApplication())
     private var homeRepository = HomeRepositoryImpl(apiService)
     private var homeUseCase = HomePageUseCase(homeRepository)
 
