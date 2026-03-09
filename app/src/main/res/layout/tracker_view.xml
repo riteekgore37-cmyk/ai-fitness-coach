@@ -70,7 +70,7 @@
                     android:layout_weight="0.6"
                     app:cpb_background_progressbar_color="@color/primary_50"
                     app:cpb_progress="60"
-                    app:cpb_progressbar_color="@color/primary_500"
+                    app:cpb_progressbar_color="#FF3939"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

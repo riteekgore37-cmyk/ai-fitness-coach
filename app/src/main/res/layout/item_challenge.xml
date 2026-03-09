@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="200dp"
     android:layout_height="150dp"
-    android:background="@color/neon_blue"
+    android:background="#FF3939"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="16dp" >
 
@@ -30,7 +30,7 @@
         android:layout_marginBottom="16dp"
         android:backgroundTint="@color/secondary_200"
         android:text="@string/join"
-        android:textColor="@color/neon_blue"
+        android:textColor="#FF3939"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

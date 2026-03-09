@@ -63,8 +63,8 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="105dp"
+            android:layout_height="71dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
             android:src="@drawable/male_vector"
@@ -106,7 +106,7 @@
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="58dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
             android:src="@drawable/female_vector"
@@ -128,7 +128,7 @@
         android:calendarViewShown="false"
         android:datePickerMode="spinner"
         android:layout_marginBottom="32dp"
-        android:textColor="@color/neon_blue"
+        android:textColor="#FF3939"
         android:theme="@style/AppTheme.Picker"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,6 +1,6 @@
 package com.aifitnesscoach.android.ui.onboarding.models
 
-data class user(
+data class User(
     val age: Int,
     val email: String,
     val fitness_level: String,
