@@ -71,7 +71,7 @@ class ProfileActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
 
-                val response = RetrofitService.createService()
+                val response = RetrofitService.getApiService(this@ProfileActivity)
                     .getProfile("Bearer $token")
 
                 Log.d("PROFILE_DEBUG", "Response code: ${response.code()}")

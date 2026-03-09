@@ -10,7 +10,6 @@ import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityRegisterScreenBinding
 import com.aifitnesscoach.android.network.RetrofitService
 import com.aifitnesscoach.android.ui.home.HomeActivity
-import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.models.UserRegisterData
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
@@ -76,11 +75,11 @@ class RegisterScreenActivity : AppCompatActivity() {
     private fun observeRegisterResponse() {
         viewModel.registerResponse.observe(this) { response ->
 
-            if (response.isSuccessful) {
+            if (response != null && response.isSuccessful) {
 
                 val body = response.body()
 
-                if (body != null && body.success) {
+                if (body != null) {
 
                     Toast.makeText(
                         this,
@@ -117,26 +116,23 @@ class RegisterScreenActivity : AppCompatActivity() {
 
             binding.progessView.progressOverlay.visibility = View.GONE
 
-            if (response.isSuccessful) {
+            if (response != null && response.isSuccessful) {
 
                 val body = response.body()
 
-                if (body != null && body.success) {
+                if (body != null) {
 
-                    // ✅ Save session
-                    UserPrefUtil.saveSession(
+                    // ✅ Save user data
+                    UserPrefUtil.saveUserData(
                         this,
-                        Session(
-                            user = body.user,
-                            token = body.token
-                        )
+                        body.data
                     )
 
                     UserPrefUtil.setUserLoggedIn(this, true)
 
                     Toast.makeText(
                         this,
-                        "Welcome ${body.user.name}",
+                        "Welcome ${body.data.user.name}",
                         Toast.LENGTH_SHORT
                     ).show()
 
@@ -147,7 +143,7 @@ class RegisterScreenActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(
                         this,
-                        body?.message ?: "Login failed",
+                        "Login failed",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

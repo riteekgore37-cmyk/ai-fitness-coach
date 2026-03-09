@@ -60,7 +60,7 @@ class EditProfileActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 try {
-                    val response = RetrofitService.createService()
+                    val response = RetrofitService.getApiService(this@EditProfileActivity)
                         .updateProfile("Bearer $token", request)
 
                     if (response.isSuccessful) {

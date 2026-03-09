@@ -1,6 +1,8 @@
 package com.aifitnesscoach.android.network
 
 import com.aifitnesscoach.android.network.models.BaseResponse
+import com.aifitnesscoach.android.network.models.GetProfileResponse
+import com.aifitnesscoach.android.network.models.UpdateProfileRequest
 import com.aifitnesscoach.android.ui.home.ui.home.domain.models.HomePageResponse
 import com.aifitnesscoach.android.ui.home.ui.nutrition.PlanBody
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.all_meals_plan.AllMealsPlansResponse
@@ -30,6 +32,16 @@ interface ApiService {
 
     @POST("/api/v1/user/auth/register")
     suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<LoginResponse>
+
+    // PROFILE
+    @GET("/api/v1/user/get-profile")
+    suspend fun getProfile(@Header("Authorization") token: String): Response<GetProfileResponse>
+
+    @POST("/api/v1/user/update-profile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateProfileRequest
+    ): Response<BaseResponse>
 
     // HOME
     @GET("/api/v1/user/homePage")

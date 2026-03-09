@@ -43,4 +43,12 @@ object UserPrefUtil {
         return context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
             .getBoolean(LOGGED_IN_KEY, false)
     }
+
+    fun logout(context: Context) {
+        context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .remove(DATA_KEY)
+            .putBoolean(LOGGED_IN_KEY, false)
+            .apply()
+    }
 }
