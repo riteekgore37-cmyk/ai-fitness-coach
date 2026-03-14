@@ -24,7 +24,7 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.usecase.SearchIngr
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.AddCustomMealBody
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.IngredientsResponse
-import com.aifitnesscoach.android.ui.home.ui.plan.data.NutritionRepositoryImp
+import com.aifitnesscoach.android.ui.home.ui.nutrition.data.NutritionRepositoryImp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

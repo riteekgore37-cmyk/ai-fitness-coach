@@ -11,7 +11,7 @@ class WorkoutRepositoryImpl(private val apiService: ApiService) : WorkoutReposit
         myWorkoutId: String, week: Int, day: Int, token: String
     ): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.markDoneWorkout(myWorkoutId, week, day)
+            val response = apiService.markDoneWorkout(token,myWorkoutId, week, day)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)

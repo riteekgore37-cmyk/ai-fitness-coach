@@ -11,7 +11,7 @@ class HomeRepositoryImpl(private val apiService: ApiService) : HomeRepository {
     override suspend fun getHomePage(token: String): ApiResult<HomePageResponse> {
 
         return try {
-            val response = apiService.getHomePage()
+            val response = apiService.getHomePage(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -29,7 +29,7 @@ class HomeRepositoryImpl(private val apiService: ApiService) : HomeRepository {
 
     override suspend fun getTodayInTake(token: String): ApiResult<TodayInTakeResponse> {
         return try {
-            val response = apiService.getHomePageTodayInTake()
+            val response = apiService.getHomePageTodayInTake(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)

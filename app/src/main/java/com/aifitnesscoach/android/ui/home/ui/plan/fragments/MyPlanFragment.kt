@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -88,11 +87,16 @@ class MyPlanFragment : Fragment() {
 
 
     private fun observeData() {
-        binding.progress.progressOverlay.visibility = View.VISIBLE
+        val token = "Bearer " + UserPrefUtil.getUserData(requireContext())!!.token
+        val workoutId = WorkoutData.workoutId
 
-        planViewModel.getPlanPage(
-            WorkoutData.workoutId, "Bearer " + UserPrefUtil.getUserData(requireContext())!!.token
-        )
+        if (workoutId.isNotEmpty()) {
+            binding.progress.progressOverlay.visibility = View.VISIBLE
+            planViewModel.getPlanPage(workoutId, token)
+        } else {
+            // workoutId not yet set — wait for HomeFragment to trigger via WorkoutData
+            binding.progress.progressOverlay.visibility = View.GONE
+        }
     }
 
     private fun observeCombinedResponses() {
@@ -192,8 +196,8 @@ class MyPlanFragment : Fragment() {
                     else -> null
                 }
                 errorState?.let {
-                    Toast.makeText(requireContext(), it.error.localizedMessage, Toast.LENGTH_SHORT)
-                        .show()
+                    val msg = it.error.localizedMessage ?: it.error.message ?: "Failed to load exercises"
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -210,19 +214,7 @@ class MyPlanFragment : Fragment() {
         currentSelectedRecyclerView = bottomSheet.findViewById(R.id.recyclerView)!!
 
         bottomSheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        bottomSheet.setOnShowListener {
-            val bottomSheetDialog = it as BottomSheetDialog
-            val parentLayout = bottomSheetDialog.findViewById<View>(
-                com.google.android.material.R.id.design_bottom_sheet
-            )
-            parentLayout?.let { bottomSheet ->
-                val behaviour = BottomSheetBehavior.from(bottomSheet)
-                val layoutParams = bottomSheet.layoutParams
-                layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
-                bottomSheet.layoutParams = layoutParams
-                behaviour.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
+
 
         initCurrentSelectedAdapter(currentSelectedRecyclerView)
         handleCreateCustomWorkout(saveAsTemplate)
@@ -267,19 +259,7 @@ class MyPlanFragment : Fragment() {
         val spinner: Spinner? = selectExerciseBottomSheet.findViewById(R.id.typeSpinner)
 
         selectExerciseBottomSheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        selectExerciseBottomSheet.setOnShowListener {
-            val bottomSheetDialog = it as BottomSheetDialog
-            val parentLayout = bottomSheetDialog.findViewById<View>(
-                com.google.android.material.R.id.design_bottom_sheet
-            )
-            parentLayout?.let { bottomSheet ->
-                val behaviour = BottomSheetBehavior.from(bottomSheet)
-                val layoutParams = bottomSheet.layoutParams
-                layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
-                bottomSheet.layoutParams = layoutParams
-                behaviour.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
+
 
         // TODO handle clear when swipe down
         closeBtn?.setOnClickListener {

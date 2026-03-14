@@ -30,6 +30,7 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.today_intak
 import com.aifitnesscoach.android.ui.home.ui.plan.domain.models.PlanPageResponse
 import com.aifitnesscoach.android.ui.home.ui.plan.persentation.PlanViewModel
 import com.aifitnesscoach.android.ui.onboarding.activities.SplashActivity
+import com.aifitnesscoach.android.ui.onboarding.activities.WelcomeScreenActivity
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.workout.activities.TodayWorkoutActivity
 import kotlinx.coroutines.launch
@@ -48,9 +49,17 @@ class HomeFragment : Fragment() {
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        getHomeData()
-        getTodayInTake()
-        initActions()
+        
+        val userData = UserPrefUtil.getUserData(requireContext())
+        if (userData == null || userData.token.isEmpty()) {
+            startActivity(Intent(requireContext(), WelcomeScreenActivity::class.java))
+            activity?.finish()
+            return root
+        }
+
+        getHomeData(userData.token)
+        getTodayInTake(userData.token)
+        initActions(userData.user.name)
         handleClick()
 
         // ✅ Navigate to ProfileActivity
@@ -58,7 +67,7 @@ class HomeFragment : Fragment() {
             startActivity(Intent(requireContext(), ProfileActivity::class.java))
         }
 
-        Log.d("User ID", UserPrefUtil.getUserData(requireContext())?.user?.id ?: "Unknown User ID")
+        Log.d("User ID", userData.user.id)
         return root
     }
 
@@ -77,8 +86,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun getTodayInTake() {
-        homeViewModel.getTodayInTake("Bearer " + UserPrefUtil.getUserData(requireContext())!!.token)
+    private fun getTodayInTake(token: String) {
+        homeViewModel.getTodayInTake("Bearer $token")
 
 
         lifecycleScope.launch {
@@ -151,9 +160,9 @@ class HomeFragment : Fragment() {
         progressBar.progress = consumed
     }
 
-    private fun getHomeData() {
+    private fun getHomeData(token: String) {
         binding.progressView.progressOverlay.visibility = View.VISIBLE
-        homeViewModel.getUserHomePage("Bearer " + UserPrefUtil.getUserData(requireContext())!!.token)
+        homeViewModel.getUserHomePage("Bearer $token")
 
 
         lifecycleScope.launch {
@@ -172,9 +181,9 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun initMealPlan(homePageResponse: HomePageResponse) {
         binding.mealDetails.text =
-            homePageResponse.data.myMealPlan.today.numberOfMeals.toString() + " Meals and ${homePageResponse.data.myMealPlan.today.numberOfSnacks} snacks"
+            homePageResponse.data.myMealPlan?.today?.numberOfMeals?.toString() ?: "0" + " Meals and ${homePageResponse.data.myMealPlan?.today?.numberOfSnacks ?: 0} snacks"
         binding.calories.text =
-            homePageResponse.data.myMealPlan.today.totalCalories.toString() + " Cal"
+            homePageResponse.data.myMealPlan?.today?.totalCalories?.toString() ?: "0" + " Cal"
     }
 
     private fun handleHomeFail(exception: Throwable) {
@@ -183,7 +192,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun handleHomeSuccess(res: HomePageResponse) {
-        WorkoutData.workoutId = res.data.myWorkout.id
+        WorkoutData.workoutId = res.data.myWorkout?.id ?: ""
         setData(res)
         initMealPlan(res)
         getPlanData()
@@ -195,6 +204,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getPlanData() {
+        val userData = UserPrefUtil.getUserData(requireContext()) ?: return
 
         lifecycleScope.launch {
             planViewModel.planResponse.collect {
@@ -207,7 +217,7 @@ class HomeFragment : Fragment() {
             }
         }
         planViewModel.getPlanPage(
-            WorkoutData.workoutId, "Bearer " + UserPrefUtil.getUserData(requireContext())!!.token
+            WorkoutData.workoutId, "Bearer " + userData.token
         )
 
     }
@@ -226,7 +236,7 @@ class HomeFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initActions() {
+    private fun initActions(userName: String) {
         binding.workoutPlanView.setOnClickListener {
             (activity as? HomeActivity)?.navigateToFragment(R.id.navigation_my_plan)
         }
@@ -242,17 +252,17 @@ class HomeFragment : Fragment() {
         binding.cameraBtn.setOnClickListener {
             startActivity(Intent(requireContext(), RequestPermissionsActivity::class.java))
         }
-        binding.userName.text = "Hey, \n" + UserPrefUtil.getUserData(requireContext())!!.user.name
+        binding.userName.text = "Hey, \n$userName"
     }
 
     @SuppressLint("SetTextI18n")
     private fun setData(response: HomePageResponse) {
-        binding.todayWorkoutName.text = response.data.myWorkout.workout.name
+        binding.todayWorkoutName.text = response.data.myWorkout?.workout?.name ?: "No Workout"
         binding.workouttime.text =
-            formatWorkoutTime(response.data.myWorkout.workout.min_per_day, requireContext())
+            formatWorkoutTime(response.data.myWorkout?.workout?.min_per_day ?: 0, requireContext())
 
         val exerciseCount =
-            WorkoutData.getTodayWorkout(response.data.myWorkout.weeks)?.total_number_exercises?.toString()
+            WorkoutData.getTodayWorkout(response.data.myWorkout?.weeks ?: emptyList())?.total_number_exercises?.toString()
         binding.exerciseCountTxt.text =
             if (exerciseCount.isNullOrBlank()) "No Exercises" else "$exerciseCount Exercises"
     }

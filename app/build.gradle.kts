@@ -35,9 +35,7 @@ android {
         viewBinding = true
         dataBinding = true
     }
-
 }
-
 
 dependencies {
     implementation("com.tbuonomo:dotsindicator:5.0")
@@ -65,8 +63,10 @@ dependencies {
     implementation("com.tbuonomo:dotsindicator:5.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.activity:activity:1.9.0")
-    // Image fetch
+    // Image fetch — OkHttp integration routes Glide through OkHttp so custom headers work
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     //Circle progress bar
     implementation("com.mikhaellopez:circularprogressbar:3.1.0")
     implementation("androidx.webkit:webkit:1.11.0")
@@ -87,8 +87,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.github.vipulasri:timelineview:1.1.5")
-
-
 }
 
 //configurations {

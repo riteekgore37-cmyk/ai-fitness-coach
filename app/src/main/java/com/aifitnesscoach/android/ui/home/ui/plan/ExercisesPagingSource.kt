@@ -14,20 +14,25 @@ class ExercisesPagingSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Data> {
         val page = params.key ?: 0
-        try {
-            val response =
-                apiService.getExercises(filterName, filterVal, page, params.loadSize)
+        return try {
+            val response = apiService.getExercises(token, filterName, filterVal, page, params.loadSize)
 
-            return LoadResult.Page(
-                data = response.body()!!.data,
+            if (!response.isSuccessful) {
+                return LoadResult.Error(Exception("Server error ${response.code()}"))
+            }
+
+            val body = response.body()
+                ?: return LoadResult.Error(Exception("Empty response from server"))
+
+            LoadResult.Page(
+                data = body.data,
                 prevKey = if (page == 0) null else page - 1,
-                nextKey = if (response.body()!!.data.isEmpty()) null else page + 1
+                nextKey = if (body.data.isEmpty()) null else page + 1
             )
         } catch (e: Exception) {
-            return LoadResult.Error(e)
+            LoadResult.Error(e)
         }
     }
-
 
     override fun getRefreshKey(state: PagingState<Int, Data>): Int? {
         return state.anchorPosition?.let { anchorPosition ->

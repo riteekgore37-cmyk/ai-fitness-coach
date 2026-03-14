@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
-import com.aifitnesscoach.android.network.TokenManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -17,8 +16,8 @@ import com.google.android.material.textfield.TextInputEditText
 import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityWelcomeScreenBinding
 import com.aifitnesscoach.android.network.RetrofitService
-import com.aifitnesscoach.android.network.RetrofitService.handleRequest
 import com.aifitnesscoach.android.ui.home.HomeActivity
+import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
 import com.aifitnesscoach.android.ui.onboarding.viewModel.UserRepository
@@ -29,13 +28,19 @@ class WelcomeScreenActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWelcomeScreenBinding
     private lateinit var bottomSheet: BottomSheetDialog
-    lateinit var viewModel: UserViewModel
-
-    private var progress: ProgressBar? = null
-    private var loginBtn: Button? = null
+    private lateinit var viewModel: UserViewModel
+    private lateinit var progress: ProgressBar
+    private lateinit var loginBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ If already logged in → go directly to Home
+        if (UserPrefUtil.isUserLoggedIn(this)) {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+            return
+        }
 
         binding = ActivityWelcomeScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -47,46 +52,8 @@ class WelcomeScreenActivity : AppCompatActivity() {
         onRegister()
     }
 
-    // ---------------- INITIAL SETUP ----------------
-
-    private fun init() {
-
-        initBottomSheet()
-
-        binding.loginTextView.setOnClickListener {
-            if (!bottomSheet.isShowing) {
-                showLogin()
-            }
-        }
-
-        binding.startButton.setOnClickListener {
-            val intent = Intent(this, OnBoardingSplashActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-    private fun initBottomSheet() {
-        bottomSheet = BottomSheetDialog(this)
-    }
-
-    private fun initViewModels() {
-
-        val userRepository = UserRepository(
-            RetrofitService.getApiService(this)
-        )
-
-        viewModel = ViewModelProvider(
-            this,
-            UserViewModelFactory(userRepository)
-        )[UserViewModel::class.java]
-    }
-
-    // ---------------- SERVER SWITCH DIALOG ----------------
-
     private fun initServerDialog() {
-
         binding.titleTv.setOnClickListener {
-
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Change Server Link")
 
@@ -97,166 +64,154 @@ class WelcomeScreenActivity : AppCompatActivity() {
             builder.setView(input)
 
             builder.setPositiveButton("OK") { _, _ ->
-
                 val newUrl = input.text.toString()
-
                 if (newUrl.isNotEmpty()) {
-
                     RetrofitService.changeBaseUrl(newUrl)
-
-                    startActivity(Intent(this, WelcomeScreenActivity::class.java))
-                    finish()
+                    recreate()
                 }
             }
 
             builder.setNegativeButton("Cancel") { dialog, _ ->
-                dialog.cancel()
+                dialog.dismiss()
             }
 
             builder.show()
         }
     }
 
-    // ---------------- REGISTER FLOW ----------------
+    private fun init() {
+        bottomSheet = BottomSheetDialog(this)
 
-    private fun onRegister() {
+        binding.loginTextView.setOnClickListener {
+            if (!bottomSheet.isShowing) {
+                showLogin()
+            }
+        }
 
-        val showLogin = intent.getBooleanExtra("register", false)
-
-        if (showLogin) {
-            showLogin()
+        binding.startButton.setOnClickListener {
+            startActivity(Intent(this, OnBoardingSplashActivity::class.java))
         }
     }
 
-    // ---------------- LOGIN BOTTOM SHEET ----------------
+    private fun initViewModels() {
+        val userRepository = UserRepository(RetrofitService.createService())
+        viewModel = ViewModelProvider(
+            this,
+            UserViewModelFactory(userRepository)
+        )[UserViewModel::class.java]
+    }
+
+    private fun observeLogin() {
+        viewModel.loginResponse.observe(this) { response ->
+
+            showProgress(false)
+
+            if (response?.isSuccessful == true) {
+
+                val body = response.body()
+
+                val user = body?.user
+                if (body != null && body.success && user != null) {
+
+                    // ✅ DISMISS bottom sheet (Fix WindowLeaked)
+                    if (bottomSheet.isShowing) {
+                        bottomSheet.dismiss()
+                    }
+
+                    // ✅ Save session
+                    UserPrefUtil.saveSession(
+                        this,
+                        Session(
+                            user = user,
+                            token = body.token
+                        )
+                    )
+
+                    UserPrefUtil.setUserLoggedIn(this, true)
+
+                    Toast.makeText(
+                        this,
+                        "Welcome ${user.name}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    finish()
+
+                } else {
+                    loginBtn.isEnabled = true  // re-enable on failure
+                    Toast.makeText(
+                        this,
+                        body?.message ?: getString(R.string.an_error_occurred),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } else {
+                loginBtn.isEnabled = true  // re-enable on HTTP error
+                Toast.makeText(
+                    this,
+                    "Login failed. Please try again.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun onRegister() {
+        val showLogin = intent.getBooleanExtra("register", false)
+        if (showLogin) showLogin()
+    }
 
     private fun showLogin() {
-
         bottomSheet.setContentView(R.layout.login_view)
-
         bottomSheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-
         bottomSheet.show()
 
-        loginBtn = bottomSheet.findViewById(R.id.loginBtn)
-        progress = bottomSheet.findViewById(R.id.progress)
-
+        loginBtn = bottomSheet.findViewById(R.id.loginBtn)!!
         val emailEditText =
             bottomSheet.findViewById<TextInputEditText>(R.id.emailEditText)
-
         val passwordEditText =
             bottomSheet.findViewById<TextInputEditText>(R.id.passwordEditText)
+        progress = bottomSheet.findViewById(R.id.progress)!!
 
-        loginBtn?.setOnClickListener {
+        loginBtn.setOnClickListener {
 
             val email = emailEditText?.text.toString().trim()
             val password = passwordEditText?.text.toString()
 
             if (email.isEmpty() || password.isEmpty()) {
-
                 Toast.makeText(
                     this,
                     getString(R.string.please_fill_all_the_data),
                     Toast.LENGTH_SHORT
                 ).show()
-
                 return@setOnClickListener
             }
 
             if (!ValidationUtil.validateEmail(email)) {
-
-                Toast.makeText(
-                    this,
-                    getString(R.string.email),
-                    Toast.LENGTH_SHORT
-                ).show()
-
+                Toast.makeText(this, getString(R.string.email), Toast.LENGTH_SHORT).show()
             } else if (!ValidationUtil.validatePasswordLength(password)) {
-
                 Toast.makeText(
                     this,
                     getString(R.string.enter_at_least_8_characters),
                     Toast.LENGTH_SHORT
                 ).show()
-
             } else {
-
                 showProgress(true)
-
+                loginBtn.isEnabled = false  // prevent double-submit
                 viewModel.loginUser(email, password)
             }
         }
     }
 
-    // ---------------- LOGIN OBSERVER ----------------
-
-    private fun observeLogin() {
-
-        viewModel.loginResponse.observe(this) { response ->
-
-            handleRequest(
-                response = response,
-
-                onSuccess = { loginResponse ->
-
-                    if (loginResponse.status == 200) {
-
-                        UserPrefUtil.saveUserData(this, loginResponse.data)
-                        UserPrefUtil.setUserLoggedIn(this, true)
-
-                        // 🔥 Save JWT token for interceptor
-                        TokenManager(this).saveToken(loginResponse.data.token)
-                        startActivity(
-                            Intent(this, HomeActivity::class.java)
-                        )
-
-                        Toast.makeText(this, "Welcome", Toast.LENGTH_SHORT).show()
-
-                        finish()
-                    }
-                },
-
-                onError = { errorResponse ->
-
-                    val defaultErrorMessage = getString(R.string.an_error_occurred)
-
-                    val message =
-                        errorResponse?.errors?.firstOrNull()
-                            ?: errorResponse?.error
-                            ?: defaultErrorMessage
-
-                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                }
-            )
-
-            showProgress(false)
-        }
-    }
-
-    // ---------------- PROGRESS CONTROL ----------------
-
     private fun showProgress(show: Boolean) {
-
         if (show) {
-
-            progress?.visibility = View.VISIBLE
-            loginBtn?.text = ""
-
+            progress.visibility = View.VISIBLE
+            loginBtn.text = ""
         } else {
-
-            progress?.visibility = View.GONE
-            loginBtn?.text = getString(R.string.login)
+            progress.visibility = View.GONE
+            loginBtn.text = getString(R.string.login)
         }
-    }
-
-    // ---------------- PREVENT WINDOW LEAK ----------------
-
-    override fun onDestroy() {
-
-        if (::bottomSheet.isInitialized && bottomSheet.isShowing) {
-            bottomSheet.dismiss()
-        }
-
-        super.onDestroy()
     }
 }

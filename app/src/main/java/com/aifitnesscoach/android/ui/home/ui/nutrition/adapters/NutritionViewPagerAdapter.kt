@@ -34,8 +34,19 @@ class NutritionViewPagerAdapter(
     private val todayMealsResponse: TodayMealsResponse,
     private val todayInTakeResponse: TodayInTakeResponse,
     private val allMealsResponse: AllMealsPlansResponse,
-    private val myMealsResponse: MyMealPlanResponse
+    private val myMealsResponse: MyMealPlanResponse?   // nullable — user may not be enrolled
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), OnPlanItemClickListener {
+
+    // Walks the entire view hierarchy and disables LayoutTransition parent-hierarchy
+    // animation, which would otherwise crash ViewPager2 during swipe.
+    private fun disableLayoutTransitions(view: View) {
+        if (view is ViewGroup) {
+            view.layoutTransition?.setAnimateParentHierarchy(false)
+            for (i in 0 until view.childCount) {
+                disableLayoutTransitions(view.getChildAt(i))
+            }
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -43,11 +54,9 @@ class NutritionViewPagerAdapter(
             0 -> DailyRoutineViewHolder(
                 DailyRoutineViewBinding.inflate(inflater, parent, false)
             )
-
             1 -> PlansViewHolder(
                 PlansViewBinding.inflate(inflater, parent, false)
             )
-
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
@@ -61,23 +70,17 @@ class NutritionViewPagerAdapter(
 
     override fun getItemCount(): Int = 2
 
-    override fun getItemViewType(position: Int): Int {
-        return position
-    }
+    override fun getItemViewType(position: Int): Int = position
 
     inner class DailyRoutineViewHolder(private val binding: DailyRoutineViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        private var listener: OnMealClickListener? = null
 
         @SuppressLint("SetTextI18n")
         fun bind(listener: OnMealClickListener) {
-            this.listener = listener
-
+            disableLayoutTransitions(binding.root)
             updateProgressBars(todayInTakeResponse)
             setOnClickListeners(listener)
             initRecyclerView()
-
-            //binding.breakfastCalories.text =
         }
 
         private fun updateProgressBars(model: TodayInTakeResponse) {
@@ -90,25 +93,16 @@ class NutritionViewPagerAdapter(
             binding.calValue.text = data.caloriesLeft.toString()
 
             updateMacroProgressBar(
-                binding.carbsProgressBar,
-                binding.carbsValue,
-                data.carbsGoal.roundToInt(),
-                data.carbsConsumed.roundToInt(),
-                "g"
+                binding.carbsProgressBar, binding.carbsValue,
+                data.carbsGoal.roundToInt(), data.carbsConsumed.roundToInt(), "g"
             )
             updateMacroProgressBar(
-                binding.proteinProgressBar,
-                binding.proteinValue,
-                data.proteinGoal.roundToInt(),
-                data.proteinConsumed.roundToInt(),
-                "g"
+                binding.proteinProgressBar, binding.proteinValue,
+                data.proteinGoal.roundToInt(), data.proteinConsumed.roundToInt(), "g"
             )
             updateMacroProgressBar(
-                binding.fatsProgressBar,
-                binding.fatsValue,
-                data.fatGoal.roundToInt(),
-                data.fatConsumed.roundToInt(),
-                "g"
+                binding.fatsProgressBar, binding.fatsValue,
+                data.fatGoal.roundToInt(), data.fatConsumed.roundToInt(), "g"
             )
 
             updateProgressBar(
@@ -119,9 +113,7 @@ class NutritionViewPagerAdapter(
             binding.burnedCal.text = "${data.caloriesBurned} Kcal"
 
             val intakedCalories = data.caloriesIntake.roundToInt()
-            updateProgressBar(
-                binding.intakedProgressBar, data.caloriesGoal.roundToInt(), intakedCalories
-            )
+            updateProgressBar(binding.intakedProgressBar, data.caloriesGoal.roundToInt(), intakedCalories)
             binding.intakedCal.text = "${intakedCalories} Kcal"
         }
 
@@ -136,11 +128,8 @@ class NutritionViewPagerAdapter(
         }
 
         private fun updateMacroProgressBar(
-            progressBar: ProgressBar,
-            valueTextView: TextView,
-            goal: Int,
-            consumed: Int,
-            unit: String
+            progressBar: ProgressBar, valueTextView: TextView,
+            goal: Int, consumed: Int, unit: String
         ) {
             valueTextView.text = "$consumed/$goal$unit"
             progressBar.max = goal
@@ -151,13 +140,14 @@ class NutritionViewPagerAdapter(
             binding.recycleView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
-            val list = todayMealsResponse.data.days[0].meals
-            val mealTypeOrder = listOf("Breakfast", "Lunch", "Dinner", "Snacks")
-
-            val sortedMealList = list.sortedBy { meal ->
-                mealTypeOrder.indexOf(meal.type)
+            val days = todayMealsResponse.data?.days
+            if (days.isNullOrEmpty()) {
+                binding.recycleView.adapter = TodayMealAdapter(context, emptyList())
+                return
             }
 
+            val mealTypeOrder = listOf("Breakfast", "Lunch", "Dinner", "Snacks")
+            val sortedMealList = days[0].meals.sortedBy { meal -> mealTypeOrder.indexOf(meal.type) }
             binding.recycleView.adapter = TodayMealAdapter(context, sortedMealList)
         }
 
@@ -167,7 +157,6 @@ class NutritionViewPagerAdapter(
             binding.snackView.setOnClickListener { listener.onMailClick("snack") }
             binding.dinnerView.setOnClickListener { listener.onMailClick("dinner") }
         }
-
     }
 
     inner class PlansViewHolder(private val binding: PlansViewBinding) :
@@ -175,7 +164,7 @@ class NutritionViewPagerAdapter(
         private lateinit var nutritionMealAdapter: NutritionMealAdapter
 
         fun bind(context: Context) {
-
+            disableLayoutTransitions(binding.root)
             showPlanDetails()
             initNutritionMealAdapter()
             initSpinner()
@@ -183,12 +172,7 @@ class NutritionViewPagerAdapter(
 
         private fun initSpinner() {
             val plans = arrayOf("My plans", "Other plans")
-
-
-            val adapter = ArrayAdapter(
-                context, R.layout.item_nutrition_spinner, plans
-            )
-
+            val adapter = ArrayAdapter(context, R.layout.item_nutrition_spinner, plans)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerPlans.adapter = adapter
             binding.spinnerPlans.onItemSelectedListener =
@@ -196,8 +180,7 @@ class NutritionViewPagerAdapter(
                     override fun onItemSelected(
                         parent: AdapterView<*>?, view: View?, position: Int, id: Long
                     ) {
-                        val selectedPlan = plans[position]
-                        if (selectedPlan == "My plans") {
+                        if (plans[position] == "My plans") {
                             binding.nutritionPlanCardView.visibility = View.VISIBLE
                             binding.availablePlan.visibility = View.GONE
                             initNutritionMealAdapter()
@@ -208,30 +191,30 @@ class NutritionViewPagerAdapter(
                         }
                     }
 
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                    }
-
-
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
         }
 
         private fun showPlanDetails() {
+            if (myMealsResponse == null) {
+                // User not enrolled in a meal plan — hide the plan card
+                binding.nutritionPlanCardView.visibility = View.GONE
+                return
+            }
+
+            binding.nutritionPlanCardView.visibility = View.VISIBLE
             binding.nutritionPlanCardView.setOnClickListener {
                 val intent = Intent(context, AboutNutritionPlanActivity::class.java)
                 NutritionHelper.selectedMyProgram = myMealsResponse.data.meal_plan
                 context.startActivity(intent)
             }
 
-            // TODO remove this
             try {
                 binding.standardPlanTextView.text = myMealsResponse.data.meal_plan.level
                 binding.desStandardPlanTextView.text = myMealsResponse.data.meal_plan.description
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
-            //TODO uncomment this line after adding image
-            //ViewUtils.loadImage(context, myMealsResponse.data.meal_plan.image, binding.imageViewBackground)
         }
 
         private fun initPlansPrograms() {
@@ -239,8 +222,7 @@ class NutritionViewPagerAdapter(
                 LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
             val data = allMealsResponse.data.asReversed()
-            val programsAdapter =
-                NutritionProgramsAdapter(data, this@NutritionViewPagerAdapter)
+            val programsAdapter = NutritionProgramsAdapter(data, this@NutritionViewPagerAdapter)
             binding.recycleView.adapter = programsAdapter
         }
 
@@ -253,24 +235,21 @@ class NutritionViewPagerAdapter(
             binding.recycleView.adapter = nutritionMealAdapter
             binding.recycleView.isNestedScrollingEnabled = false
         }
-
     }
 
     private fun prepareData(): List<NutritionDataModel> {
+        // If no meal plan enrolled, return empty list
+        val days = myMealsResponse?.data?.days ?: return emptyList()
+
         val dayNames =
             listOf("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 
-
         val dataList = mutableListOf<NutritionDataModel>()
-
         var pos = 0
         for (day in dayNames) {
-            val dataModel = NutritionDataModel(
-                day, myMealsResponse.data.days[pos++].meals
-            )
-            dataList.add(dataModel)
+            if (pos >= days.size) break
+            dataList.add(NutritionDataModel(day, days[pos++].meals))
         }
-
         return dataList
     }
 

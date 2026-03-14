@@ -10,6 +10,7 @@ import com.aifitnesscoach.android.R
 import com.aifitnesscoach.android.databinding.ActivityRegisterScreenBinding
 import com.aifitnesscoach.android.network.RetrofitService
 import com.aifitnesscoach.android.ui.home.HomeActivity
+import com.aifitnesscoach.android.ui.onboarding.models.Session
 import com.aifitnesscoach.android.ui.onboarding.models.UserRegisterData
 import com.aifitnesscoach.android.ui.onboarding.utils.UserPref.UserPrefUtil
 import com.aifitnesscoach.android.ui.onboarding.utils.ValidationUtil
@@ -22,7 +23,6 @@ class RegisterScreenActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterScreenBinding
     private lateinit var viewModel: UserViewModel
 
-    // Save email & password temporarily for auto login
     private var registeredEmail: String = ""
     private var registeredPassword: String = ""
 
@@ -38,7 +38,7 @@ class RegisterScreenActivity : AppCompatActivity() {
     }
 
     private fun initViewModels() {
-        val userRepository = UserRepository(RetrofitService.getApiService(this))
+        val userRepository = UserRepository(RetrofitService.createService())
         viewModel = ViewModelProvider(
             this,
             UserViewModelFactory(userRepository)
@@ -47,15 +47,12 @@ class RegisterScreenActivity : AppCompatActivity() {
 
     private fun doRegister() {
         binding.registerButton.setOnClickListener {
-
             val name = binding.nameEditText.text.toString().trim()
             val email = binding.emailEditText2.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
             val confirmPassword = binding.confirmPasswordEditText.text.toString().trim()
 
             if (isValidInput()) {
-
-                // Store for auto login
                 registeredEmail = email
                 registeredPassword = password
 
@@ -71,95 +68,47 @@ class RegisterScreenActivity : AppCompatActivity() {
         }
     }
 
-    // 🔹 Observe Register API
     private fun observeRegisterResponse() {
         viewModel.registerResponse.observe(this) { response ->
-
-            if (response != null && response.isSuccessful) {
-
+            if (response?.isSuccessful == true) {
                 val body = response.body()
-
-                if (body != null) {
-
-                    Toast.makeText(
-                        this,
-                        "Registration successful",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    // ✅ Automatically call login
+                if (body != null && body.success) {
+                    Toast.makeText(this, "Registration successful", Toast.LENGTH_LONG).show()
                     viewModel.loginUser(registeredEmail, registeredPassword)
-
                 } else {
                     binding.progessView.progressOverlay.visibility = View.GONE
-                    Toast.makeText(
-                        this,
-                        getString(R.string.an_error_occurred),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this, getString(R.string.an_error_occurred), Toast.LENGTH_SHORT).show()
                 }
-
             } else {
                 binding.progessView.progressOverlay.visibility = View.GONE
-                Toast.makeText(
-                    this,
-                    "Registration failed. Please try again.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "Registration failed. Please try again.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // 🔹 Observe Login API
     private fun observeLoginResponse() {
         viewModel.loginResponse.observe(this) { response ->
-
             binding.progessView.progressOverlay.visibility = View.GONE
 
-            if (response != null && response.isSuccessful) {
-
+            if (response?.isSuccessful == true) {
                 val body = response.body()
-
-                if (body != null) {
-
-                    // ✅ Save user data
-                    UserPrefUtil.saveUserData(
-                        this,
-                        body.data
-                    )
-
+                if (body != null && body.success) {
+                    val user = body.user ?: return@observe
+                    UserPrefUtil.saveSession(this, Session(user = user, token = body.token))
                     UserPrefUtil.setUserLoggedIn(this, true)
-
-                    Toast.makeText(
-                        this,
-                        "Welcome ${body.data.user.name}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // ✅ Go to Home
+                    Toast.makeText(this, "Welcome ${user.name}", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, HomeActivity::class.java))
                     finish()
-
                 } else {
-                    Toast.makeText(
-                        this,
-                        "Login failed",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this, body?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
                 }
-
             } else {
-                Toast.makeText(
-                    this,
-                    "Auto login failed. Please login manually.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "Auto login failed. Please login manually.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun isValidInput(): Boolean {
-
         val name = binding.nameEditText.text.toString()
         val email = binding.emailEditText2.text.toString()
         val password = binding.passwordEditText.text.toString()
@@ -169,22 +118,18 @@ class RegisterScreenActivity : AppCompatActivity() {
             showToast(getString(R.string.please_fill_all_the_data))
             return false
         }
-
         if (!ValidationUtil.validateEmail(email)) {
             showToast(getString(R.string.write_a_valid_email))
             return false
         }
-
         if (!ValidationUtil.validatePasswordLength(password)) {
             showToast(getString(R.string.enter_at_least_8_characters))
             return false
         }
-
         if (!ValidationUtil.validatePasswordMatch(password, confirmPassword)) {
             showToast(getString(R.string.password_don_t_match))
             return false
         }
-
         return true
     }
 

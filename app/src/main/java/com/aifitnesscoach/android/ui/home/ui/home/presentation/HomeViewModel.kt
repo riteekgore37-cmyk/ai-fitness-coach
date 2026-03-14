@@ -1,6 +1,7 @@
 package com.aifitnesscoach.android.ui.home.ui.home.presentation
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aifitnesscoach.android.network.ApiResult
 import com.aifitnesscoach.android.network.RetrofitService
@@ -12,10 +13,6 @@ import com.aifitnesscoach.android.ui.home.ui.home.domain.usecase.TodayInTakeUseC
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.today_intake.TodayInTakeResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class HomeViewModel (application: Application) : AndroidViewModel(application) {

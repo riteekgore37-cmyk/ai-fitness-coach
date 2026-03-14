@@ -78,7 +78,7 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         todayMealsResponse: TodayMealsResponse,
         todayInTakeResponse: TodayInTakeResponse,
         allMealsResponse: AllMealsPlansResponse,
-        myMealsResponse: MyMealPlanResponse,
+        myMealsResponse: MyMealPlanResponse?,  // nullable — user may not be enrolled in a meal plan
     ) {
         val viewPager2 = ViewPager2ViewHeightAnimator()
         viewPager2.viewPager2 = binding.viewPager
@@ -112,7 +112,6 @@ class NutritionFragment : Fragment(), OnMealClickListener {
                         else -> View.NO_ID
                     }
                 )
-
             }
         })
     }
@@ -167,22 +166,10 @@ class NutritionFragment : Fragment(), OnMealClickListener {
                 } else {
                     getSearchResultData(searchTerm)
                 }
-
             }
 
-            override fun beforeTextChanged(
-                s: CharSequence, start: Int, count: Int, after: Int
-            ) {
-
-
-            }
-
-            override fun onTextChanged(
-                s: CharSequence, start: Int, before: Int, count: Int
-            ) {
-
-
-            }
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
         })
     }
 
@@ -190,7 +177,6 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         viewModel.searchIngredients(
             "Bearer ${UserPrefUtil.getUserData(requireContext())?.token}", searchTerm
         )
-
 
         lifecycleScope.launch {
             viewModel.getAllIngredients.collect {
@@ -229,8 +215,13 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         }
     }
 
+    // myMealPlan is optional — user may not be enrolled, which returns a 404.
+    // We only require the three core data sets to be present before rendering.
     private fun isAllDataLoaded(nutritionData: NutritionData): Boolean {
-        return nutritionData.todayMeals != null && nutritionData.todayInTake != null && nutritionData.myMealPlan != null && nutritionData.allMealsPlans != null
+        return nutritionData.todayMeals != null &&
+                nutritionData.todayInTake != null &&
+                nutritionData.allMealsPlans != null
+        // myMealPlan is intentionally excluded — 404 is valid when not enrolled
     }
 
     private fun handleCombinedData(nutritionData: NutritionData) {
@@ -252,7 +243,7 @@ class NutritionFragment : Fragment(), OnMealClickListener {
                         "Failure",
                         "API call failed in class: $className with exception: $exception and generic type: $genericClassName"
                     )
-                    handleFail(exception)
+                    // Don't show toast for expected 404s (e.g. myMealPlan not enrolled)
                     binding.progressView.progressOverlay.visibility = View.GONE
                 }
 
@@ -260,21 +251,21 @@ class NutritionFragment : Fragment(), OnMealClickListener {
             }
         }
 
-
         var todayMealsResponse: TodayMealsResponse? = null
         var todayInTakeResponse: TodayInTakeResponse? = null
         var allMealsResponse: AllMealsPlansResponse? = null
-        var myMealsResponse: MyMealPlanResponse? = null
+        var myMealsResponse: MyMealPlanResponse? = null  // allowed to stay null
 
         handleApiResult(TodayMealsResponse::class, nutritionData.todayMeals) {
             todayMealsResponse = it
         }
-        handleApiResult(
-            TodayInTakeResponse::class, nutritionData.todayInTake
-        ) { todayInTakeResponse = it }
-        handleApiResult(
-            AllMealsPlansResponse::class, nutritionData.allMealsPlans
-        ) { allMealsResponse = it }
+        handleApiResult(TodayInTakeResponse::class, nutritionData.todayInTake) {
+            todayInTakeResponse = it
+        }
+        handleApiResult(AllMealsPlansResponse::class, nutritionData.allMealsPlans) {
+            allMealsResponse = it
+        }
+        // myMealPlan: extract if successful, leave null on 404 — both are valid
         handleApiResult(MyMealPlanResponse::class, nutritionData.myMealPlan) {
             myMealsResponse = it
         }
@@ -282,14 +273,13 @@ class NutritionFragment : Fragment(), OnMealClickListener {
         val finalTodayMeals = todayMealsResponse
         val finalTodayInTake = todayInTakeResponse
         val finalAllMeals = allMealsResponse
-        val finalMyMeals = myMealsResponse
 
-        if (finalTodayMeals != null && finalTodayInTake != null && finalAllMeals != null && finalMyMeals != null) {
+        if (finalTodayMeals != null && finalTodayInTake != null && finalAllMeals != null) {
             initViewPager(
                 finalTodayMeals,
                 finalTodayInTake,
                 finalAllMeals,
-                finalMyMeals,
+                myMealsResponse,  // may be null — NutritionViewPagerAdapter must handle this
             )
         }
     }
@@ -323,7 +313,6 @@ class NutritionFragment : Fragment(), OnMealClickListener {
                 }
             }
         }
-
     }
 
     override fun onMailClick(mealType: String) {
@@ -401,7 +390,6 @@ class NutritionFragment : Fragment(), OnMealClickListener {
             "Bearer ${UserPrefUtil.getUserData(requireContext())?.token}", data
         )
 
-
         lifecycleScope.launch {
             viewModel.addCustomMeal.collect {
                 when (it) {
@@ -420,6 +408,4 @@ class NutritionFragment : Fragment(), OnMealClickListener {
             }
         }
     }
-
-
 }

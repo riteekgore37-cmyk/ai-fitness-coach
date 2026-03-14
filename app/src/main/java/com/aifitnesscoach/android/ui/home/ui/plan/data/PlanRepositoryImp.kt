@@ -24,7 +24,8 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
     ): ApiResult<PlanPageResponse> {
 
         return try {
-            val response = apiService.getPlanPage(workoutId)
+            // workoutId is the @Path param, token is the @Header param — ORDER MATTERS
+            val response = apiService.getPlanPage(workoutId, token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -41,7 +42,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
 
     override suspend fun getCustomWorkouts(token: String): ApiResult<CustomWorkoutResponse> {
         return try {
-            val response = apiService.getCustomWorkouts()
+            val response = apiService.getCustomWorkouts(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -50,7 +51,6 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
                 val errorResponse = response.errorBody()?.string()
                 val parsedError = Gson().fromJson(errorResponse, CustomWorkoutResponse::class.java)
                 ApiResult.Error(parsedError)
-
             }
         } catch (e: Exception) {
             ApiResult.Failure(e)
@@ -61,7 +61,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, filterName: String, filterVal: String, page: Int, limit: Int
     ): ApiResult<ExercisesResponse> {
         return try {
-            val response = apiService.getExercises (filterName, filterVal, page, limit)
+            val response = apiService.getExercises(token, filterName, filterVal, page, limit)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -70,7 +70,6 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
                 val errorResponse = response.errorBody()?.string()
                 val parsedError = Gson().fromJson(errorResponse, ExercisesResponse::class.java)
                 ApiResult.Error(parsedError)
-
             }
         } catch (e: Exception) {
             ApiResult.Failure(e)
@@ -81,7 +80,7 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, searchTerm: String, filter: String
     ): ApiResult<ExercisesResponse> {
         return try {
-            val response = apiService.getExercisesSearch(searchTerm, filter)
+            val response = apiService.getExercisesSearch(token, searchTerm, filter)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -100,16 +99,14 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         token: String, createCustomWorkoutRequest: CreateCustomWorkoutRequest
     ): ApiResult<CreateCustomWorkoutResponse> {
         return try {
-            val response = apiService.createCustomWorkout(createCustomWorkoutRequest)
-
+            val response = apiService.createCustomWorkout(token, createCustomWorkoutRequest)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
                 } ?: ApiResult.Failure(Throwable("Response body is null"))
             } else {
                 val errorResponse = response.errorBody()?.string()
-                val parsedError =
-                    Gson().fromJson(errorResponse, CreateCustomWorkoutResponse::class.java)
+                val parsedError = Gson().fromJson(errorResponse, CreateCustomWorkoutResponse::class.java)
                 Log.e("customworkouterror", parsedError.errors?.get(0).toString())
                 ApiResult.Error(parsedError)
             }
@@ -119,17 +116,14 @@ class PlanRepositoryImp(private val apiService: ApiService) : MyPlanRepository {
         }
     }
 
-
     fun getExercisesPagingData(
         token: String, filterName: String, filterVal: String
     ): Flow<PagingData<Data>> {
-        return Pager(config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+        return Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             pagingSourceFactory = {
-                ExercisesPagingSource(
-                    apiService, token, filterName, filterVal
-                )
-            }).flow
+                ExercisesPagingSource(apiService, token, filterName, filterVal)
+            }
+        ).flow
     }
-
-
 }

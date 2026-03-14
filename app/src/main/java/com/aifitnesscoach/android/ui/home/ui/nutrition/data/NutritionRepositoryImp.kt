@@ -1,4 +1,4 @@
-package com.aifitnesscoach.android.ui.home.ui.plan.data
+package com.aifitnesscoach.android.ui.home.ui.nutrition.data
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -16,6 +16,7 @@ import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.my_meal_pla
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.today_intake.TodayInTakeResponse
 import com.aifitnesscoach.android.ui.home.ui.nutrition.domain.models.today_meals.TodayMealsResponse
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.AddCustomMealBody
+import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data
 import com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.IngredientsResponse
 import kotlinx.coroutines.flow.Flow
 
@@ -26,7 +27,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     ): ApiResult<TodayMealsResponse> {
 
         return try {
-            val response = apiService.getTodayMeals()
+            val response = apiService.getTodayMeals(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -46,7 +47,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     ): ApiResult<DailyGoalsResponse> {
 
         return try {
-            val response = apiService.getDailyGoals()
+            val response = apiService.getDailyGoals(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -64,7 +65,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
     override suspend fun getTodayInTake(token: String): ApiResult<TodayInTakeResponse> {
 
         return try {
-            val response = apiService.getTodayInTake()
+            val response = apiService.getTodayInTake(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -81,7 +82,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun getMyMealPlan(token: String): ApiResult<MyMealPlanResponse> {
         return try {
-            val response = apiService.getMyMealPlan()
+            val response = apiService.getMyMealPlan(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -98,7 +99,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun getAllMealsPlans(token: String): ApiResult<AllMealsPlansResponse> {
         return try {
-            val response = apiService.getAllMealsPlan()
+            val response = apiService.getAllMealsPlan(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -117,7 +118,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         token: String, page: Int, limit: Int
     ): ApiResult<IngredientsResponse> {
         return try {
-            val response = apiService.getIngredients( page, limit)
+            val response = apiService.getIngredients( token,page, limit)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -136,7 +137,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         token: String, searchTerm: String,
     ): ApiResult<IngredientsResponse> {
         return try {
-            val response = apiService.searchIngredients(searchTerm)
+            val response = apiService.searchIngredients(token,searchTerm)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -156,7 +157,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
         data: AddCustomMealBody
     ): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.addCustomMeal(data)
+            val response = apiService.addCustomMeal(token,data)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -173,7 +174,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     override suspend fun enrollIntoPlan(token: String, planId: PlanBody): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.enrollIntoPlanProgram( planId)
+            val response = apiService.enrollIntoPlanProgram( token,planId)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -191,7 +192,7 @@ class NutritionRepositoryImp(private val apiService: ApiService) : NutritionRepo
 
     fun getIngredientsPagingData(
         token: String
-    ): Flow<PagingData<com.aifitnesscoach.android.ui.home.ui.nutrition.models.ingredients.Data>> {
+    ): Flow<PagingData<Data>> {
         return Pager(config = PagingConfig(pageSize = 20, enablePlaceholders = false),
             pagingSourceFactory = {
                 IngredientsPagingSource(apiService, token)

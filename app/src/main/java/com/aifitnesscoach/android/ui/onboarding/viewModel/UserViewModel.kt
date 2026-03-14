@@ -7,36 +7,68 @@ import androidx.lifecycle.viewModelScope
 import com.aifitnesscoach.android.ui.onboarding.models.LoginResponse
 import com.aifitnesscoach.android.ui.onboarding.models.RequestModels.RegisterRequest
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 
-class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
+class UserViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
-    private val _loginResponse = MutableLiveData<Response<LoginResponse>?>()
-    val loginResponse: LiveData<Response<LoginResponse>?> = _loginResponse
+    // ---------------- LOGIN ----------------
 
-    private val _registerResponse = MutableLiveData<Response<LoginResponse>?>()
-    val registerResponse: LiveData<Response<LoginResponse>?> = _registerResponse
+    private val _loginResponse = MutableLiveData<Response<LoginResponse>>()
+    val loginResponse: LiveData<Response<LoginResponse>> = _loginResponse
 
     fun loginUser(email: String, password: String) {
         viewModelScope.launch {
-            try {
-                val response = userRepository.loginUser(email, password)
-                _loginResponse.value = response
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _loginResponse.value = null
+            // Retry once on timeout (Render free tier cold-start can take ~90s)
+            repeat(2) { attempt ->
+                try {
+                    val response = userRepository.loginUser(email, password)
+                    _loginResponse.value = response
+                    return@launch
+                } catch (_: java.net.SocketTimeoutException) {
+                    if (attempt == 1) {
+                        val errorBody = "Server is starting up, please try again in a moment."
+                            .toResponseBody("text/plain".toMediaTypeOrNull())
+                        _loginResponse.value = Response.error(503, errorBody)
+                    }
+                    // attempt 0: fall through and retry silently
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    val errorBody = "Network error. Please check your connection."
+                        .toResponseBody("text/plain".toMediaTypeOrNull())
+                    _loginResponse.value = Response.error(500, errorBody)
+                    return@launch
+                }
             }
         }
     }
 
+    // ---------------- REGISTER ----------------
+
+    private val _registerResponse = MutableLiveData<Response<LoginResponse>>()
+    val registerResponse: LiveData<Response<LoginResponse>> = _registerResponse
+
     fun registerUser(registerRequest: RegisterRequest) {
+
         viewModelScope.launch {
+
             try {
+
                 val response = userRepository.registerUser(registerRequest)
                 _registerResponse.value = response
+
             } catch (e: Exception) {
+
                 e.printStackTrace()
-                _registerResponse.value = null
+
+                // Prevent crash (Render timeout etc.)
+                val errorBody = "Network Error"
+                    .toResponseBody("text/plain".toMediaTypeOrNull())
+
+                _registerResponse.value = Response.error(500, errorBody)
             }
         }
     }

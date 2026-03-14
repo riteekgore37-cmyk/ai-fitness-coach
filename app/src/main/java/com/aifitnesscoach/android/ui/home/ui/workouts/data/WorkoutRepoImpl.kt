@@ -15,7 +15,7 @@ class WorkoutRepoImpl(private val apiService: ApiService) : WorkoutsRepo {
     ): ApiResult<WorkoutProgramsResponse> {
 
         return try {
-            val response = apiService.getWorkoutPrograms()
+            val response = apiService.getWorkoutPrograms(token)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
@@ -36,7 +36,7 @@ class WorkoutRepoImpl(private val apiService: ApiService) : WorkoutsRepo {
         workoutId: Workout
     ): ApiResult<BaseResponse> {
         return try {
-            val response = apiService.enrollWorkoutProgram(workoutId)
+            val response = apiService.enrollWorkoutProgram(token,workoutId)
             if (response.isSuccessful) {
                 response.body()?.let {
                     ApiResult.Success(it)
