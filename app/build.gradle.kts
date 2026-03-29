@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -66,7 +67,8 @@ dependencies {
     // Image fetch — OkHttp integration routes Glide through OkHttp so custom headers work
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
+    
     //Circle progress bar
     implementation("com.mikhaellopez:circularprogressbar:3.1.0")
     implementation("androidx.webkit:webkit:1.11.0")
@@ -88,9 +90,3 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.github.vipulasri:timelineview:1.1.5")
 }
-
-//configurations {
-//    // Resolves dependency conflict caused by some dependencies use
-//    // com.google.guava:guava and com.google.guava:listenablefuture together.
-//    all*.exclude group: 'com.google.guava', module: 'listenablefuture'
-//}

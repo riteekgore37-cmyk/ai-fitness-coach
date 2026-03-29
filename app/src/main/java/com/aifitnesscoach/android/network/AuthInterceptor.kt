@@ -9,8 +9,12 @@ class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
 
         val request = chain.request()
         val token = tokenProvider()
+        val url = request.url.toString()
 
-        val newRequest = if (!token.isNullOrEmpty()) {
+        // Only add Authorization header to requests going to our backend
+        val isBackendRequest = url.contains("ai-fitness-coach-backend-an8o.onrender.com")
+
+        val newRequest = if (!token.isNullOrEmpty() && isBackendRequest) {
             request.newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()
